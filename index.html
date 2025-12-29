@@ -3,7 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KeuanganKu HD - Persistent & Smooth</title>
+    
+    <!-- PWA / Offline Metadata -->
+    <meta name="theme-color" content="#4338ca">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <!-- Manifest as Data URI -->
+    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIktldWFuZ2FuS3UgSEQiLAogICJzaG9ydF9uYW1lIjogIktldWFuZ2FuS3UiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzYzNjZmMSIsCiAgInRoZW1lX2NvbG9yIjogIiM0MzM4Y2EiCn0=">
+
+    <title>KeuanganKu HD - Persistent & Offline</title>
+    
     <style>
         /* Desain Santai & Kontras Tinggi (Soft UI) */
         @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
@@ -24,7 +34,7 @@
             --nav-bg: rgba(255, 255, 255, 0.95);
             --radius-L: 32px;
             --radius-M: 20px;
-            --shadow-soft: 0 10px 30px -5px rgba(0,0,0,0.08);
+            --shadow-soft: 0 10px 30px -5px rgba(0,0,0,0.1);
             --bezier: cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
@@ -64,6 +74,7 @@
         .text-xs { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); }
         .text-xl { font-size: 2.2rem; font-weight: 700; margin: 5px 0; color: var(--primary); }
 
+        /* Card Elements */
         .app-shell {
             background: var(--card-bg);
             border: 1px solid var(--border);
@@ -91,6 +102,7 @@
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 
+        /* Buttons & Controls */
         .btn-main {
             width: 100%; padding: 18px; border-radius: var(--radius-M); border: none;
             background: var(--primary); color: #fff;
@@ -135,6 +147,7 @@
 
         .item-row { padding: 16px 20px; background: var(--input-bg); border-radius: var(--radius-M); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
 
+        /* Floating Nav */
         .bottom-nav {
             position: fixed; bottom: 20px; width: 92%; max-width: 420px;
             background: var(--nav-bg); border: 1.5px solid var(--border);
@@ -154,7 +167,7 @@
         .modal-content { background: var(--card-bg); width: 100%; max-width: 380px; border-radius: var(--radius-L); padding: 35px; box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.4); border: none; }
 
         .chart-container { background: var(--input-bg); border-radius: var(--radius-M); padding: 24px; margin-bottom: 15px; }
-        .glow-bar { height: 12px; background: rgba(0,0,0,0.08); border-radius: 6px; overflow: hidden; position: relative; margin-top: 8px; }
+        .glow-bar { height: 12px; background: rgba(0,0,0,0.08); border-radius: 6px; overflow: hidden; position: relative; margin-top: 6px; }
         .glow-fill-inc { height: 100%; background: var(--success); transition: width 1s ease; }
         .glow-fill-exp { height: 100%; background: var(--danger); transition: width 1s ease; }
 
@@ -177,12 +190,12 @@
 
     <div id="toast" style="position:fixed; top:30px; left:50%; transform:translateX(-50%) translateY(-20px); padding:16px 32px; background:var(--text-main); color:var(--card-bg); border-radius:50px; font-weight:700; font-size:14px; opacity:0; pointer-events:none; transition:0.4s var(--bezier); z-index:11000; box-shadow: 0 15px 30px rgba(0,0,0,0.3);">Pesan</div>
 
-    <!-- Login Screen -->
+    <!-- Login -->
     <div id="login-screen">
         <div class="login-card">
             <div style="width:85px; height:85px; background:var(--primary); border-radius:26px; display:flex; align-items:center; justify-content:center; color:white; margin:0 auto 25px auto; font-size: 38px; box-shadow: 0 10px 25px var(--primary-glow);">💸</div>
             <h1 style="font-size:1.8rem; margin-bottom: 8px; text-transform: none;">KeuanganKu</h1>
-            <p class="text-xs" style="opacity:0.6; margin-bottom:45px;">Kelola akun keuangan Anda</p>
+            <p class="text-xs" style="opacity:0.6; margin-bottom:45px;">Manajemen Keuangan Offline</p>
             <input type="text" id="login-user" placeholder="Username" class="input-hd">
             <input type="password" id="login-pass" placeholder="Password" class="input-hd" style="margin-bottom: 35px;">
             <button onclick="handleLogin()" class="btn-main">MASUK SEKARANG</button>
@@ -190,13 +203,14 @@
         </div>
     </div>
 
-    <!-- Main App Container -->
+    <!-- Main App -->
     <div id="main-app" class="container hide">
+        
         <header class="header-sticky">
             <div class="section" style="padding: 20px 25px;">
                 <div class="flex">
                     <div style="text-align: left;">
-                        <span id="full-date" class="text-xs" style="color:var(--primary); opacity: 0.8; margin-bottom: 4px; display: block; font-weight: 800;">MINGGU, 28 DESEMBER</span>
+                        <span id="full-date" class="text-xs" style="color:var(--primary); opacity: 0.8; margin-bottom: 4px; display: block; font-weight: 800;">MEMUAT TANGGAL...</span>
                         <h1 id="welcome-text" style="text-align: left; text-transform: none; font-size: 1.4rem;">Halo, User 👋</h1>
                     </div>
                     <label class="toggle-switch">
@@ -222,28 +236,24 @@
             <div class="app-shell">
                 <div class="section">
                     <h1>Catat Transaksi</h1>
-                    <p class="text-xs" style="text-align: center; margin: 20px 0 10px 0; font-weight: 800;">PILIH KATEGORI</p>
-                    <div id="tx-icon-picker" class="wallet-scroll no-scrollbar" style="gap:12px; justify-content: center;"></div>
-                    
-                    <div class="grid-2" style="margin-top: 25px;">
+                    <div id="tx-icon-picker" class="wallet-scroll no-scrollbar" style="gap:12px; justify-content: center; margin: 20px 0;"></div>
+                    <div class="grid-2">
                         <div><p class="text-xs" style="margin-bottom:8px; font-weight: 800;">DARI SUMBER</p><select id="wallet-select" class="input-hd" style="margin:0;"></select></div>
                         <div id="to-wallet-container" class="hide"><p class="text-xs" style="margin-bottom:8px; color:var(--primary); font-weight: 800;">KE TUJUAN</p><select id="wallet-to-select" class="input-hd" style="margin:0;"></select></div>
                     </div>
-
-                    <input type="text" id="desc" placeholder="Keterangan transaksi..." class="input-hd" style="margin-top: 20px;">
+                    <input type="text" id="desc" placeholder="Keterangan..." class="input-hd" style="margin-top: 15px;">
                     <input type="text" id="amount" placeholder="0" class="input-hd" style="font-size:1.8rem; text-align:center; padding: 24px; color: var(--primary); border: 2px dashed var(--primary-glow); margin-bottom: 25px;" oninput="formatAmountInput(this)">
-                    
                     <div class="grid-3" style="margin-bottom: 25px;">
                         <button onclick="setTxMode('income')" id="btn-m-income" class="btn-main" style="background:var(--success); color: #fff;">MASUK</button>
                         <button onclick="setTxMode('expense')" id="btn-m-expense" class="btn-main" style="background:transparent; border: 2px solid var(--danger); color: var(--danger); box-shadow: none;">KELUAR</button>
                         <button onclick="setTxMode('transfer')" id="btn-m-transfer" class="btn-main" style="background:transparent; border: 2px solid var(--warning); color: var(--warning); box-shadow: none;">PINDAH</button>
                     </div>
-                    <button onclick="processTransaction()" class="btn-main" style="background: var(--text-main); font-size: 1rem; border-radius: 1.5rem;">SIMPAN DATA</button>
+                    <button onclick="processTransaction()" class="btn-main">SIMPAN DATA</button>
                 </div>
             </div>
         </div>
 
-        <!-- VIEW: TAGIHAN -->
+        <!-- Tagihan -->
         <div id="view-bills" class="hide view-panel">
             <div class="app-shell">
                 <div class="section">
@@ -256,31 +266,30 @@
                     <label class="flex gap-2" style="font-size: 0.85rem; margin-bottom: 20px; cursor: pointer; color: var(--text-muted);">
                         <input type="checkbox" id="bill-is-variable" style="width: 18px; height: 18px;"> Nominal bisa berubah
                     </label>
-                    <button onclick="addNewBill()" class="btn-main">TAMBAH TAGIHAN</button>
+                    <button onclick="addNewBill()" class="btn-main">SIMPAN TAGIHAN</button>
                 </div>
                 <div class="section" id="bill-list-full" style="padding-top: 0;"></div>
             </div>
         </div>
 
-        <!-- VIEW: TARGET -->
+        <!-- Target -->
         <div id="view-goals" class="hide view-panel">
             <div class="app-shell">
                 <div class="section">
                     <h1>Target Impian</h1>
-                    <input type="text" id="goal-name" class="input-hd" placeholder="Barang yang ingin dibeli">
-                    <input type="text" id="goal-target" class="input-hd" placeholder="Harga Barang (Rp)" oninput="formatAmountInput(this)">
+                    <input type="text" id="goal-name" class="input-hd" placeholder="Barang impian">
+                    <input type="text" id="goal-target" class="input-hd" placeholder="Harga Target (Rp)" oninput="formatAmountInput(this)">
                     <button onclick="addNewGoal()" class="btn-main">MULAI MENABUNG</button>
                 </div>
                 <div class="section" id="goals-list" style="padding-top: 0;"></div>
             </div>
         </div>
 
-        <!-- VIEW: ANGGARAN -->
+        <!-- Anggaran -->
         <div id="view-budget" class="hide view-panel">
             <div class="app-shell">
                 <div class="section">
                     <h1>Limit Anggaran</h1>
-                    <p class="text-xs" style="text-align: center; margin: 15px 0 15px 0;">PILIH KATEGORI</p>
                     <div id="budget-icon-picker" class="wallet-scroll no-scrollbar" style="margin-bottom:25px; gap:12px; justify-content: center;"></div>
                     <input type="text" id="budget-limit" class="input-hd" placeholder="Batas Maksimal (Rp)" oninput="formatAmountInput(this)">
                     <button onclick="saveBudget()" class="btn-main">PASANG BATAS</button>
@@ -289,7 +298,7 @@
             </div>
         </div>
 
-        <!-- VIEW: LOG -->
+        <!-- Log Riwayat -->
         <div id="view-report" class="hide view-panel">
             <div class="app-shell">
                 <div class="section">
@@ -299,8 +308,8 @@
                     </div>
                     <div class="chart-container">
                         <div class="flex" style="margin-bottom:12px;">
-                            <div><p class="text-xs" style="font-weight: 800;">MASUK</p><b id="chart-inc-val" style="color:var(--success); font-size: 1.1rem;">Rp 0</b></div>
-                            <div style="text-align:right;"><p class="text-xs" style="font-weight: 800;">KELUAR</p><b id="chart-exp-val" style="color:var(--danger); font-size: 1.1rem;">Rp 0</b></div>
+                            <div><p class="text-xs">MASUK</p><b id="chart-inc-val" style="color:var(--success); font-size: 1.1rem;">Rp 0</b></div>
+                            <div style="text-align:right;"><p class="text-xs">KELUAR</p><b id="chart-exp-val" style="color:var(--danger); font-size: 1.1rem;">Rp 0</b></div>
                         </div>
                         <div class="glow-bar"><div id="chart-inc-fill" class="glow-fill-inc"></div></div>
                         <div class="glow-bar" style="margin-top: 10px;"><div id="chart-exp-fill" class="glow-fill-exp"></div></div>
@@ -310,50 +319,11 @@
             </div>
         </div>
 
-        <!-- VIEW: MENU PENGATURAN -->
+        <!-- Pengaturan -->
         <div id="view-options" class="hide view-panel">
-            <div class="app-shell">
-                <div class="section">
-                    <h1>Profil & Keamanan</h1>
-                    <input type="text" id="edit-name" class="input-hd" placeholder="Nama Tampilan Baru">
-                    <input type="text" id="edit-user" class="input-hd" placeholder="Username Login Baru">
-                    <input type="password" id="edit-pass" class="input-hd" placeholder="Sandi Baru (Opsional)">
-                    <button onclick="updateProfile()" class="btn-main" style="background: var(--text-main);">SIMPAN PERUBAHAN</button>
-                </div>
-            </div>
-
-            <div class="app-shell">
-                <div class="section">
-                    <h1>Menu Dompet</h1>
-                    <div id="wallet-type-picker" class="flex gap-2" style="margin-bottom: 25px; justify-content: center;">
-                        <div onclick="selectWalletIcon('💳')" class="wallet-icon-item" data-icon="💳">💳</div>
-                        <div onclick="selectWalletIcon('📱')" class="wallet-icon-item" data-icon="📱">📱</div>
-                        <div onclick="selectWalletIcon('💵')" class="wallet-icon-item" data-icon="💵">💵</div>
-                        <div onclick="selectWalletIcon('🏦')" class="wallet-icon-item" data-icon="🏦">🏦</div>
-                    </div>
-                    <div class="flex gap-2">
-                        <input type="text" id="new-wallet-name" class="input-hd" placeholder="Nama Dompet Baru" style="margin:0;">
-                        <button onclick="addNewWallet()" class="nav-btn" style="background:var(--success); color:white; width: 65px; height: 50px; border-radius: 20px; font-weight: 900; font-size: 20px;">+</button>
-                    </div>
-                    <div id="wallets-manage-list" style="margin-top:25px;"></div>
-                </div>
-            </div>
-
-            <div class="app-shell">
-                <div class="section">
-                    <h1>Menu Kategori</h1>
-                    <div class="flex gap-2">
-                        <select id="new-cat-icon" class="input-hd" style="width: 75px; margin: 0; padding: 12px; font-size: 1.2rem;">
-                            <option value="💸">💸</option><option value="💹">💹</option><option value="🍱">🍱</option><option value="🍿">🍿</option>
-                            <option value="🎮">🎮</option><option value="⚽">⚽</option><option value="🎁">🎁</option><option value="💇">💇</option>
-                        </select>
-                        <input type="text" id="new-cat-name" class="input-hd" placeholder="Nama Kategori..." style="margin:0;">
-                        <button onclick="addNewCategory()" class="nav-btn" style="background:var(--primary); color:white; width: 65px; height: 50px; border-radius: 20px; font-weight: 900; font-size: 20px;">+</button>
-                    </div>
-                    <div id="categories-manage-list" style="margin-top:25px;"></div>
-                </div>
-            </div>
-
+            <div class="app-shell"><div class="section"><h1>Profil & Keamanan</h1><input type="text" id="edit-name" class="input-hd" placeholder="Nama Tampilan Baru"><input type="text" id="edit-user" class="input-hd" placeholder="Username Baru"><input type="password" id="edit-pass" class="input-hd" placeholder="Sandi Baru (Opsional)"><button onclick="updateProfile()" class="btn-main" style="background: var(--text-main);">SIMPAN PERUBAHAN</button></div></div>
+            <div class="app-shell"><div class="section"><h1>Menu Dompet</h1><div id="wallet-type-picker" class="flex gap-2" style="margin-bottom: 25px; justify-content: center;"><div onclick="selectWalletIcon('💳')" class="wallet-icon-item" data-icon="💳">💳</div><div onclick="selectWalletIcon('📱')" class="wallet-icon-item" data-icon="📱">📱</div><div onclick="selectWalletIcon('💵')" class="wallet-icon-item" data-icon="💵">💵</div><div onclick="selectWalletIcon('🏦')" class="wallet-icon-item" data-icon="🏦">🏦</div></div><div class="flex gap-2"><input type="text" id="new-wallet-name" class="input-hd" placeholder="Nama Dompet" style="margin:0;"><button onclick="addNewWallet()" class="nav-btn" style="background:var(--success); color:white; width: 65px; height: 50px; border-radius: 20px;">+</button></div><div id="wallets-manage-list" style="margin-top:25px;"></div></div></div>
+            <div class="app-shell"><div class="section"><h1>Menu Kategori</h1><div class="flex gap-2"><select id="new-cat-icon" class="input-hd" style="width: 75px; margin: 0;"><option value="💸">💸</option><option value="💹">💹</option><option value="🍱">🍱</option><option value="🍿">🍿</option></select><input type="text" id="new-cat-name" class="input-hd" placeholder="Nama Kategori" style="margin:0;"><button onclick="addNewCategory()" class="nav-btn" style="background:var(--primary); color:white; width: 65px; height: 50px; border-radius: 20px;">+</button></div><div id="categories-manage-list" style="margin-top:25px;"></div></div></div>
             <button onclick="handleLogout()" style="width:100%; padding:22px; border-radius:var(--radius-M); background:#fee2e2; color:#b91c1c; font-weight:800; border:none; cursor:pointer; font-size: 0.9rem; letter-spacing: 1px;">KELUAR SESI</button>
         </div>
 
@@ -367,15 +337,15 @@
         </nav>
     </div>
 
-    <!-- Modals -->
+    <!-- MODALS -->
     <div id="modal-exit" class="modal"><div class="modal-content" style="text-align: center;"><h3>Keluar Sesi?</h3><div class="grid-2" style="margin-top: 25px;"><button onclick="closeExitModal(false)" class="btn-main" style="background: var(--input-bg); color: var(--text-main); box-shadow: none;">Batal</button><button onclick="closeExitModal(true)" class="btn-main">Keluar</button></div></div></div>
     <div id="modal-confirm" class="modal"><div class="modal-content" style="text-align: center;"><h3>Konfirmasi</h3><p id="confirm-msg" class="text-muted" style="margin: 20px 0 30px 0;"></p><div class="grid-2"><button onclick="closeConfirm(false)" class="btn-main" style="background: var(--input-bg); color: var(--text-main); box-shadow: none;">Batal</button><button onclick="closeConfirm(true)" class="btn-main" style="background: var(--danger);">Eksekusi</button></div></div></div>
-    <div id="modal-prompt" class="modal"><div class="modal-content"><h3 id="prompt-title" style="margin-bottom: 25px; text-align: center;">Update Nilai</h3><input type="text" id="prompt-input" class="input-hd" style="text-align: center; font-size: 1.7rem; padding: 24px; color: var(--primary);" oninput="formatAmountInput(this)"><div class="grid-2"><button onclick="closePrompt(false)" class="btn-main" style="background: var(--input-bg); color: var(--text-main); box-shadow: none;">Batal</button><button onclick="closePrompt(true)" class="btn-main">Simpan</button></div></div></div>
+    <div id="modal-prompt" class="modal"><div class="modal-content"><h3 id="prompt-title" style="margin-bottom: 20px; text-align: center;">Update Nilai</h3><input type="text" id="prompt-input" class="input-hd" style="text-align: center; font-size: 1.7rem; padding: 24px; color: var(--primary);" oninput="formatAmountInput(this)"><div class="grid-2"><button onclick="closePrompt(false)" class="btn-main" style="background: var(--input-bg); color: var(--text-main); box-shadow: none;">Batal</button><button onclick="closePrompt(true)" class="btn-main">Simpan</button></div></div></div>
     <div id="pay-confirm-modal" class="modal"><div class="modal-content" style="text-align:center;"><h3>Pembayaran</h3><p id="pay-detail" class="text-muted" style="margin-bottom:20px; font-weight: 800; color: var(--primary);"></p><div id="variable-amount-container" class="hide"><input type="text" id="pay-actual-amount" class="input-hd" style="text-align:center;" oninput="formatAmountInput(this)"></div><select id="pay-wallet-select" class="input-hd" style="text-align:center;"></select><div class="grid-2" style="margin-top: 15px;"><button onclick="toggleModal('pay-confirm-modal')" class="btn-main" style="background:var(--input-bg); color:var(--text-main); box-shadow: none;">Batal</button><button onclick="confirmPayment()" class="btn-main" style="background:var(--success);">Bayar</button></div></div></div>
 
     <script>
         /**
-         * 1. INITIAL STATE & GLOBAL VARIABLES
+         * 1. STATE & GLOBAL VARIABLES
          */
         window.activeView = 'finance';
         window.currentUser = null;
@@ -401,7 +371,50 @@
         window.promptCallbackFn = null;
 
         /**
-         * 2. DATA PERSISTENCE FUNCTIONS
+         * 2. CORE UTILITY FUNCTIONS (Hoisted)
+         */
+        function formatRupiah(n) { return "Rp " + (n || 0).toLocaleString('id-ID'); }
+        function parseFormattedValue(str) { if(!str) return 0; return parseFloat(String(str).replace(/\./g, "")) || 0; }
+        function formatAmountInput(input) { if(!input) return; let v = input.value.replace(/\D/g, ""); input.value = v.replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
+        function showNotice(msg) { const t = document.getElementById('toast'); if(t){ t.innerText = msg; t.style.opacity = 1; t.style.transform = "translateX(-50%) translateY(0)"; setTimeout(() => { t.style.opacity = 0; t.style.transform = "translateX(-50%) translateY(-20px)"; }, 2000); } }
+        function toggleModal(id) { const m = document.getElementById(id); if(m) m.classList.toggle('active'); }
+        function applyTheme(isDark) { document.body.setAttribute('data-theme', isDark ? 'dark' : 'light'); try { localStorage.setItem('kf_theme', isDark ? 'dark' : 'light'); } catch(e){} }
+        function selectWalletIcon(icon) { window.selectedWalletIcon = icon; document.querySelectorAll('.wallet-icon-item').forEach(el => { el.classList.toggle('selected', el.getAttribute('data-icon') === icon); }); }
+
+        function updateTimeAndDate() {
+            const now = new Date();
+            const clockEl = document.getElementById('clock-display');
+            const dateEl = document.getElementById('full-date');
+            if(clockEl) clockEl.innerText = now.toLocaleTimeString('id-ID');
+            if(dateEl) {
+                const optMas = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+                const masehi = now.toLocaleDateString('id-ID', optMas).toUpperCase();
+                // Simple Hijri fallback calculation if Intl not fully supported or for offline safety
+                const hijri = new Intl.DateTimeFormat('id-ID-u-ca-islamic', { day: 'numeric', month: 'long', year: 'numeric' }).format(now);
+                dateEl.innerText = `${masehi} • ${hijri.toUpperCase()}`;
+            }
+        }
+
+        // --- GLOBALIZED OFFLINE PWA ---
+        function initOfflineService() {
+            if ('serviceWorker' in navigator) {
+                const swCode = `
+                    const CACHE_NAME = 'keuanganku-v2';
+                    self.addEventListener('install', (e) => {
+                        e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll([location.href])));
+                    });
+                    self.addEventListener('fetch', (e) => {
+                        e.respondWith(caches.match(e.request).then((res) => res || fetch(e.request)));
+                    });
+                `;
+                const blob = new Blob([swCode], { type: 'text/javascript' });
+                const swUrl = URL.createObjectURL(blob);
+                navigator.serviceWorker.register(swUrl).catch(() => {});
+            }
+        }
+
+        /**
+         * 3. DATA PERSISTENCE & LOADING
          */
         function saveData() {
             if(!window.currentUser) return;
@@ -420,6 +433,14 @@
         function loadUserData() {
             if(!window.currentUser) return;
             const uid = window.currentUser.id;
+            
+            // Inisialisasi Default Categories
+            const defaultCats = [
+                { icon: '🍱', name: 'Makan' }, { icon: '🛒', name: 'Belanja' }, 
+                { icon: '☕', name: 'Jajan' }, { icon: '🚌', name: 'Transport' }, 
+                { icon: '🛍️', name: 'Hobi' }, { icon: '💡', name: 'Tagihan' }
+            ];
+
             try {
                 window.transactions = JSON.parse(localStorage.getItem(`kf_log_${uid}`)) || [];
                 window.wallets = JSON.parse(localStorage.getItem(`kf_wallets_${uid}`)) || [
@@ -429,34 +450,32 @@
                 window.bills = JSON.parse(localStorage.getItem(`kf_bills_${uid}`)) || [];
                 window.goals = JSON.parse(localStorage.getItem(`kf_goals_${uid}`)) || [];
                 window.budgets = JSON.parse(localStorage.getItem(`kf_budgets_${uid}`)) || [];
-                const savedCats = JSON.parse(localStorage.getItem(`kf_cats_${uid}`)); if(savedCats) window.categories = savedCats;
-            } catch(e){}
+                const savedCats = JSON.parse(localStorage.getItem(`kf_cats_${uid}`)); 
+                window.categories = (savedCats && Array.isArray(savedCats) && savedCats.length > 0) ? savedCats : defaultCats;
+            } catch(e){
+                window.categories = defaultCats;
+            }
             
             const limit = 30 * 24 * 60 * 60 * 1000; const now = Date.now();
             window.transactions = window.transactions.filter(t => (now - (t.timestamp || 0)) < limit);
-            window.selectedTxCategory = window.categories[0]; window.selectedBudgetCategory = window.categories[0];
             
-            // UI Sync
-            document.getElementById('edit-user').value = window.currentUser.username;
-            document.getElementById('edit-name').value = window.currentUser.displayName || "";
+            window.selectedTxCategory = window.categories[0]; 
+            window.selectedBudgetCategory = window.categories[0];
+            
+            if(document.getElementById('edit-user')) document.getElementById('edit-user').value = window.currentUser.username;
+            if(document.getElementById('edit-name')) document.getElementById('edit-name').value = window.currentUser.displayName || "";
             saveData();
         }
 
         /**
-         * 3. UI UTILITIES & RENDERERS
+         * 4. RENDERERS
          */
-        function formatRupiah(n) { return "Rp " + (n || 0).toLocaleString('id-ID'); }
-        function parseFormattedValue(str) { if(!str) return 0; return parseFloat(String(str).replace(/\./g, "")) || 0; }
-        function formatAmountInput(input) { if(!input) return; let v = input.value.replace(/\D/g, ""); input.value = v.replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
-        function showNotice(msg) { const t = document.getElementById('toast'); if(t){ t.innerText = msg; t.style.opacity = 1; t.style.transform = "translateX(-50%) translateY(10px)"; setTimeout(() => { t.style.opacity = 0; t.style.transform = "translateX(-50%) translateY(-20px)"; }, 2000); } }
-        function toggleModal(id) { const m = document.getElementById(id); if(m) m.classList.toggle('active'); }
-        function applyTheme(isDark) { document.body.setAttribute('data-theme', isDark ? 'dark' : 'light'); try { localStorage.setItem('kf_theme', isDark ? 'dark' : 'light'); } catch(e){} }
-        function selectWalletIcon(icon) { window.selectedWalletIcon = icon; document.querySelectorAll('.wallet-icon-item').forEach(el => { el.classList.toggle('selected', el.getAttribute('data-icon') === icon); }); }
-
         function renderBills() {
             const fl = document.getElementById('bill-list-full'); if(!fl) return;
             fl.innerHTML = window.bills.length === 0 ? '<p style="text-align:center; opacity:0.3; padding: 20px;">Belum ada tagihan.</p>' : '';
-            window.bills.forEach(b => { fl.innerHTML += `<div class="item-row" style="background:var(--card-bg); border: 1.5px solid var(--border);"><div><b style="font-size:0.85rem;">${b.name}</b><br><small style="font-size:0.65rem;">Hingga: ${b.date}</small></div><div style="text-align:right;"><b style="font-size:0.85rem; display:block; color:var(--primary);">${b.isVariable?'Var':formatRupiah(b.amount)}</b><div style="display:flex; gap:8px; align-items:center; margin-top:4px;"><button onclick="initPayment('${b.id}')" style="background:var(--success); border:none; color:white; font-size:0.6rem; padding:6px 12px; border-radius:10px; font-weight:700;">BAYAR</button><button onclick="openConfirmModal('Hapus tagihan?', ()=>{deleteBillAction('${b.id}')})" style="color:var(--danger); background:none; border:none; font-size:14px; font-weight:900;">✕</button></div></div></div>`; });
+            window.bills.sort((a,b) => new Date(a.date) - new Date(b.date)).forEach(b => {
+                fl.innerHTML += `<div class="item-row" style="background:var(--card-bg); border: 1.5px solid var(--border);"><div><b style="font-size:0.85rem;">${b.name}</b><br><small style="font-size:0.65rem;">Hingga: ${b.date}</small></div><div style="text-align:right;"><b style="font-size:0.85rem; display:block; color:var(--primary);">${b.isVariable?'Var':formatRupiah(b.amount)}</b><div style="display:flex; gap:8px; align-items:center; margin-top:4px;"><button onclick="initPayment('${b.id}')" style="background:var(--success); border:none; color:white; font-size:0.6rem; padding:6px 12px; border-radius:10px; font-weight:700;">BAYAR</button><button onclick="openConfirmModal('Hapus tagihan?', ()=>{deleteBillAction('${b.id}')})" style="color:var(--danger); background:none; border:none; font-size:14px; font-weight:900;">✕</button></div></div></div>`;
+            });
         }
         function renderGoals() {
             const gl = document.getElementById('goals-list'); if(!gl) return;
@@ -471,10 +490,9 @@
                 const percent = Math.min(Math.round((spent / b.limit) * 100), 100);
                 const color = percent >= 100 ? 'var(--danger)' : (percent > 85 ? 'var(--warning)' : 'var(--primary)');
                 const warningTag = percent >= 100 ? '<span class="warning-badge">LIMIT TERCAPAI</span>' : '';
-                bl.innerHTML += `<div class="chart-container" style="background: var(--card-bg); border: 2px solid var(--border);"><div class="flex"><b style="font-size:0.85rem">${b.icon} ${b.name}</b> ${warningTag} <span style="font-weight:900; color:${color}">${percent}%</span></div><div class="glow-bar" style="height: 10px;"><div style="height:100%; width:${percent}%; background: ${color};"></div></div><div class="flex" style="margin-top:12px; font-size:0.75rem; font-weight:800;"><span>${formatRupiah(spent)}</span><span class="text-muted">Batas: ${formatRupiah(b.limit)}</span></div><div style="text-align:right; margin-top:10px;"><button onclick="openConfirmModal('Hapus limit?', ()=>{deleteBudgetAction('${b.id}')})" style="background:rgba(225, 29, 72, 0.1); border:none; color:var(--danger); font-weight:800; font-size:0.65rem; padding:5px 12px; border-radius:10px;">HAPUS</button></div></div>`;
+                bl.innerHTML += `<div class="chart-container" style="background: var(--card-bg); border: 2px solid var(--border);"><div class="flex"><b style="font-size:0.85rem">${b.icon} ${b.name}</b> ${warningTag} <span style="font-weight:900; color:${color}">${percent}%</span></div><div class="glow-bar" style="height: 8px;"><div style="height:100%; width:${percent}%; background: ${color};"></div></div><div class="flex" style="margin-top:12px; font-size:0.75rem; font-weight:800;"><span>${formatRupiah(spent)}</span><span class="text-muted">Batas: ${formatRupiah(b.limit)}</span></div><div style="text-align:right; margin-top:10px;"><button onclick="openConfirmModal('Hapus limit?', ()=>{deleteBudgetAction('${b.id}')})" style="background:rgba(225, 29, 72, 0.1); border:none; color:var(--danger); font-weight:800; font-size:0.65rem; padding:5px 12px; border-radius:10px;">HAPUS</button></div></div>`;
             });
         }
-
         function updateUI() {
             if(!window.currentUser) return;
             let total = 0; const wc = document.getElementById('wallets-container'); const ws = document.getElementById('wallet-select'); const wts = document.getElementById('wallet-to-select');
@@ -487,12 +505,12 @@
             });
             const tb = document.getElementById('total-balance'); if(tb) tb.innerText = formatRupiah(total);
             const list = document.getElementById('transaction-list');
-            if (list) { list.innerHTML = window.transactions.length === 0 ? '<p style="text-align:center; opacity:0.3; padding:40px;">Belum ada riwayat</p>' : ''; window.transactions.slice().reverse().forEach(t => { list.innerHTML += `<div class="item-row" style="background:var(--card-bg); border:1.5px solid var(--border);"><div><b style="font-size:0.85rem;">${(t.catName || 'Umum').toUpperCase()}</b><br><small style="font-size:0.65rem; color:var(--text-muted); font-weight:700;">${t.date}</small></div><div style="font-weight:900; font-size: 0.95rem; color:${t.type=='income'?'var(--success)':'var(--danger)'}">${formatRupiah(t.amount)}</div></div>`; }); }
+            if (list) { list.innerHTML = window.transactions.length === 0 ? '<p style="text-align:center; opacity:0.3; padding:40px;">Belum ada riwayat</p>' : ''; window.transactions.slice().reverse().forEach(t => { list.innerHTML += `<div class="item-row" style="background:var(--card-bg); border:1.5px solid var(--border);"><div><b style="font-size:0.85rem;">${(t.catName || 'Umum').toUpperCase()}</b><br><small style="font-size:0.65rem; color:var(--text-muted); font-weight:700;">${t.date}</small></div><div style="font-weight:900; font-size: 0.85rem; color:${t.type=='income'?'var(--success)':'var(--danger)'}">${formatRupiah(t.amount)}</div></div>`; }); }
             renderBills(); renderGoals(); renderBudgets(); renderCategoriesManage(); renderWalletsManage(); updateReportChart();
+            const welcomeText = document.getElementById('welcome-text'); if(welcomeText) welcomeText.innerText = `Halo, ${(window.currentUser.displayName || window.currentUser.username)} 👋`;
         }
-
         function renderCategoriesManage() { const l = document.getElementById('categories-manage-list'); if(!l) return; l.innerHTML = ''; window.categories.forEach((cat, idx) => { l.innerHTML += `<div class="item-row" style="background:var(--input-bg);"><span>${cat.icon} ${cat.name}</span>${idx > 5 ? `<button onclick="openConfirmModal('Hapus?', ()=>{deleteCategoryAction(${idx})})" style="color:var(--danger); border:none; background:none; font-weight:800; font-size:0.75rem;">HAPUS</button>` : '<small style="opacity:0.3; font-size:0.55rem; font-weight:800;">SISTEM</small>'}</div>`; }); }
-        function renderWalletsManage() { const l = document.getElementById('wallets-manage-list'); if(!l) return; l.innerHTML = ''; window.wallets.forEach(w => { l.innerHTML += `<div class="item-row" style="background:var(--input-bg);"><span>${w.icon || '🏦'} ${w.name}</span><div style="display:flex; gap:12px;"><button onclick="openPromptModal('Update', ${w.balance}, (v)=>{updateWalletAction('${w.id}', v)})" style="color:var(--primary); border:none; background:none; font-weight:800; font-size:0.75rem;">UPDATE</button><button onclick="openConfirmModal('Hapus?', ()=>{deleteWalletAction('${w.id}')})" style="color:var(--danger); border:none; background:none; font-weight:800; font-size:0.75rem;">HAPUS</button></div></div>`; }); }
+        function renderWalletsManage() { const l = document.getElementById('wallets-manage-list'); if(!l) return; l.innerHTML = ''; window.wallets.forEach(w => { l.innerHTML += `<div class="item-row" style="background:var(--input-bg);"><span>${w.icon || '🏦'} ${w.name}</span><div style="display:flex; gap:12px;"><button onclick="openPromptModal('Update Saldo', ${w.balance}, (v)=>{updateWalletAction('${w.id}', v)})" style="color:var(--primary); border:none; background:none; font-weight:800; cursor:pointer; font-size:0.7rem;">UPDATE</button><button onclick="openConfirmModal('Hapus dompet?', ()=>{deleteWalletAction('${w.id}')})" style="color:var(--danger); border:none; background:none; font-weight:800; cursor:pointer; font-size:0.7rem;">HAPUS</button></div></div>`; }); }
         function renderPickers() {
             const tp = document.getElementById('tx-icon-picker'); if(tp){ tp.innerHTML = ''; window.categories.forEach(cat => { const d = document.createElement('div'); d.className = `category-item ${cat.icon === (window.selectedTxCategory && window.selectedTxCategory.icon) ? 'selected' : ''}`; d.innerHTML = `<span>${cat.icon}</span><span>${cat.name}</span>`; d.onclick = () => { window.selectedTxCategory = cat; renderPickers(); }; tp.appendChild(d); }); }
             const bp = document.getElementById('budget-icon-picker'); if(bp){ bp.innerHTML = ''; window.categories.forEach(cat => { const d = document.createElement('div'); d.className = `category-item ${cat.icon === (window.selectedBudgetCategory && window.selectedBudgetCategory.icon) ? 'selected' : ''}`; d.innerHTML = `<span>${cat.icon}</span><span>${cat.name}</span>`; d.onclick = () => { window.selectedBudgetCategory = cat; renderPickers(); }; bp.appendChild(d); }); }
@@ -507,17 +525,22 @@
         }
 
         /**
-         * 4. BUSINESS LOGIC & ACTIONS
+         * 5. BUSINESS ACTIONS
          */
+        function checkBudgetWarning(categoryIcon, newExpenseAmount) {
+            const budget = window.budgets.find(b => b.icon === categoryIcon);
+            if (!budget) return;
+            const currentSpent = window.transactions.filter(t => t.type === 'expense' && t.catIcon === categoryIcon).reduce((acc, curr) => acc + curr.amount, 0);
+            if (currentSpent + newExpenseAmount > budget.limit) { showNotice(`⚠️ Anggaran ${budget.name} melampaui batas!`); }
+        }
+
         function handleLogin() {
             const uInput = document.getElementById('login-user'); const pInput = document.getElementById('login-pass');
             if(!uInput || !pInput) return;
             const u = uInput.value.trim(); const p = pInput.value.trim();
             const user = window.users.find(x => x.username.toLowerCase() === u.toLowerCase() && x.password === p);
-            if(user) { 
-                window.currentUser = user; try { localStorage.setItem('kf_current_session', JSON.stringify(window.currentUser)); } catch(e){}
-                loadUserData(); document.getElementById('login-screen').classList.add('hide'); document.getElementById('main-app').classList.remove('hide'); initApp(); 
-            } else showNotice("Login Gagal");
+            if(user) { window.currentUser = user; try { localStorage.setItem('kf_current_session', JSON.stringify(window.currentUser)); } catch(e){} loadUserData(); document.getElementById('login-screen').classList.add('hide'); document.getElementById('main-app').classList.remove('hide'); initApp(); } 
+            else showNotice("Login Gagal");
         }
         function handleLogout() { try { localStorage.removeItem('kf_current_session'); } catch(e){} location.reload(); }
         function switchView(id) { window.activeView = id; ['finance', 'goals', 'bills', 'budget', 'report', 'options'].forEach(v => { const el = document.getElementById('view-' + v); const nav = document.getElementById('nav-' + v); if (el) el.classList.add('hide'); if (nav) nav.classList.remove('active'); }); const tv = document.getElementById('view-' + id); const tn = document.getElementById('nav-' + id); if(tv) tv.classList.remove('hide'); if(tn) tn.classList.add('active'); window.history.pushState({ view: id }, ""); }
@@ -535,14 +558,14 @@
             saveData(); updateUI(); document.getElementById('desc').value = ''; document.getElementById('amount').value = ''; showNotice("Berhasil!");
         }
 
-        function addNewBill() { const n = document.getElementById('bill-name').value; const d = document.getElementById('bill-date').value; const a = parseFormattedValue(document.getElementById('bill-amount').value); const isVar = document.getElementById('bill-is-variable').checked; if(!n || !d) return showNotice("Lengkapi form!"); window.bills.push({ id: 'bl_'+Date.now(), name: n.toUpperCase(), date: d, amount: a, isVariable: isVar }); saveData(); updateUI(); showNotice("Tagihan ditambah!"); }
-        function initPayment(id) { window.pendingBill = window.bills.find(x => x.id == id); document.getElementById('pay-detail').innerText = `${window.pendingBill.name}`; if(window.pendingBill.isVariable) document.getElementById('variable-amount-container').classList.remove('hide'); else document.getElementById('variable-amount-container').classList.add('hide'); const sel = document.getElementById('pay-wallet-select'); if(sel) { sel.innerHTML = ''; window.wallets.forEach(w => sel.innerHTML += `<option value="${w.id}">${w.icon || '🏦'} ${w.name}</option>`); } toggleModal('pay-confirm-modal'); }
-        function confirmPayment() { const wId = document.getElementById('pay-wallet-select').value; const w = window.wallets.find(x => x.id === wId); let final = window.pendingBill.isVariable ? parseFormattedValue(document.getElementById('pay-actual-amount').value) : window.pendingBill.amount; if(final <= 0) return showNotice("Isi nominal!"); w.balance -= final; window.transactions.push({ id: Date.now(), desc: `BAYAR: ${window.pendingBill.name}`, amount: final, type: 'expense', wallet: w.name, catIcon: '💡', catName: 'Tagihan', date: new Date().toLocaleDateString('id-ID'), timestamp: Date.now() }); const d = new Date(window.pendingBill.date); d.setMonth(d.getMonth() + 1); window.pendingBill.date = d.toISOString().split('T')[0]; saveData(); updateUI(); toggleModal('pay-confirm-modal'); showNotice("Lunas!"); }
-        function addNewGoal() { const n = document.getElementById('goal-name').value.trim(); const t = parseFormattedValue(document.getElementById('goal-target').value); if(!n || t <= 0) return showNotice("Isi data!"); window.goals.push({ id: 'g_'+Date.now(), name: n.toUpperCase(), target: t, current: 0 }); saveData(); updateUI(); showNotice("Target dibuat!"); }
-        function saveBudget() { const limit = parseFormattedValue(document.getElementById('budget-limit').value); if(limit <= 0) return showNotice("Isi nominal!"); const exists = window.budgets.findIndex(b => b.icon === window.selectedBudgetCategory.icon); if(exists !== -1) window.budgets[exists].limit = limit; else window.budgets.push({ id: 'b_'+Date.now(), icon: window.selectedBudgetCategory.icon, name: window.selectedBudgetCategory.name, limit: limit }); saveData(); updateUI(); showNotice("Limit disimpan!"); }
-        function addNewWallet() { const n = document.getElementById('new-wallet-name').value.trim(); if(!n) return showNotice("Isi nama!"); window.wallets.push({ id: 'w_'+Date.now(), name: n.toUpperCase(), balance: 0, icon: window.selectedWalletIcon }); document.getElementById('new-wallet-name').value = ''; saveData(); updateUI(); showNotice("Dompet ditambah!"); }
-        function addNewCategory() { const n = document.getElementById('new-cat-name').value.trim(); const i = document.getElementById('new-cat-icon').value; if(!n) return showNotice("Isi nama!"); window.categories.push({ icon: i, name: n.substring(0, 10) }); saveData(); updateUI(); renderPickers(); document.getElementById('new-cat-name').value = ''; showNotice("Kategori ditambah!"); }
-        function updateProfile() { const dn = document.getElementById('edit-name').value.trim(); const u = document.getElementById('edit-user').value.trim(); const p = document.getElementById('edit-pass').value.trim(); if(!u) return showNotice("Isi Username!"); window.currentUser.username = u; window.currentUser.displayName = dn; if(p) window.currentUser.password = p; const idx = window.users.findIndex(us => us.id === window.currentUser.id); if(idx!==-1) window.users[idx] = window.currentUser; try { localStorage.setItem('kf_current_session', JSON.stringify(window.currentUser)); } catch(e){} saveData(); loadUserData(); showNotice("Selesai!"); }
+        function addNewBill() { const n = document.getElementById('bill-name').value; const d = document.getElementById('bill-date').value; const a = parseFormattedValue(document.getElementById('bill-amount').value); const isVar = document.getElementById('bill-is-variable').checked; if(!n || !d) return showNotice("LENGKAPI FORM!"); window.bills.push({ id: 'bl_'+Date.now(), name: n.toUpperCase(), date: d, amount: a, isVariable: isVar }); saveData(); updateUI(); showNotice("Tagihan ditambah!"); document.getElementById('bill-name').value = ''; document.getElementById('bill-amount').value = ''; }
+        function initPayment(id) { window.pendingBill = window.bills.find(x => x.id == id); document.getElementById('pay-detail').innerText = `${window.pendingBill.name} (${window.pendingBill.isVariable ? 'Nominal Variabel' : formatRupiah(window.pendingBill.amount)})`; if(window.pendingBill.isVariable) document.getElementById('variable-amount-container').classList.remove('hide'); else document.getElementById('variable-amount-container').classList.add('hide'); const sel = document.getElementById('pay-wallet-select'); if(sel) { sel.innerHTML = ''; window.wallets.forEach(w => sel.innerHTML += `<option value="${w.id}">${w.icon || '🏦'} ${w.name} (${formatRupiah(w.balance)})</option>`); } toggleModal('pay-confirm-modal'); }
+        function confirmPayment() { const wId = document.getElementById('pay-wallet-select').value; const w = window.wallets.find(x => x.id === wId); let final = window.pendingBill.isVariable ? parseFormattedValue(document.getElementById('pay-actual-amount').value) : window.pendingBill.amount; if(final <= 0) return showNotice("Isi nominal!"); w.balance -= final; window.transactions.push({ id: Date.now(), desc: `BAYAR: ${window.pendingBill.name}`, amount: final, type: 'expense', wallet: w.name, catIcon: '💡', catName: 'Tagihan', date: new Date().toLocaleDateString('id-ID'), timestamp: Date.now() }); const d = new Date(window.pendingBill.date); d.setMonth(d.getMonth() + 1); window.pendingBill.date = d.toISOString().split('T')[0]; saveData(); updateUI(); toggleModal('pay-confirm-modal'); showNotice("Selesai!"); }
+        function addNewGoal() { const n = document.getElementById('goal-name').value.trim(); const t = parseFormattedValue(document.getElementById('goal-target').value); if(!n || t <= 0) return showNotice("Isi data!"); window.goals.push({ id: 'g_'+Date.now(), name: n.toUpperCase(), target: t, current: 0 }); saveData(); updateUI(); document.getElementById('goal-name').value = ''; document.getElementById('goal-target').value = ''; showNotice("Berhasil!"); }
+        function saveBudget() { const limit = parseFormattedValue(document.getElementById('budget-limit').value); if(limit <= 0) return showNotice("Isi limit!"); const exists = window.budgets.findIndex(b => b.icon === window.selectedBudgetCategory.icon); if(exists !== -1) window.budgets[exists].limit = limit; else window.budgets.push({ id: 'b_'+Date.now(), icon: window.selectedBudgetCategory.icon, name: window.selectedBudgetCategory.name, limit: limit }); saveData(); updateUI(); document.getElementById('budget-limit').value = ''; showNotice("Batas disimpan!"); }
+        function addNewWallet() { const n = document.getElementById('new-wallet-name').value.trim(); if(!n) return showNotice("Isi nama!"); window.wallets.push({ id: 'w_'+Date.now(), name: n.toUpperCase(), balance: 0, icon: window.selectedWalletIcon }); document.getElementById('new-wallet-name').value = ''; saveData(); updateUI(); showNotice("Dompet baru!"); }
+        function addNewCategory() { const n = document.getElementById('new-cat-name').value.trim(); const i = document.getElementById('new-cat-icon').value; if(!n) return showNotice("Isi nama!"); window.categories.push({ icon: i, name: n.substring(0, 10) }); saveData(); updateUI(); renderPickers(); document.getElementById('new-cat-name').value = ''; showNotice("Ditambah!"); }
+        function updateProfile() { const dn = document.getElementById('edit-name').value.trim(); const u = document.getElementById('edit-user').value.trim(); const p = document.getElementById('edit-pass').value.trim(); if(!u) return showNotice("User wajib!"); window.currentUser.username = u; window.currentUser.displayName = dn; if(p) window.currentUser.password = p; const idx = window.users.findIndex(us => us.id === window.currentUser.id); if(idx!==-1) window.users[idx] = window.currentUser; try { localStorage.setItem('kf_current_session', JSON.stringify(window.currentUser)); } catch(e){} saveData(); loadUserData(); showNotice("Selesai!"); }
 
         function deleteWalletAction(id) { window.wallets = window.wallets.filter(w => w.id != id); saveData(); updateUI(); }
         function updateWalletAction(id, val) { const w = window.wallets.find(x => x.id === id); if(w) w.balance = parseFormattedValue(val); saveData(); updateUI(); }
@@ -563,39 +586,28 @@
             window.currentTxMode = m; 
             const colors = { income: 'var(--success)', expense: 'var(--danger)', transfer: 'var(--warning)' };
             ['income', 'expense', 'transfer'].forEach(x => { 
-                const b = document.getElementById('btn-m-'+x); 
-                if(b) { 
-                    if(x === m) {
-                        b.style.background = colors[x]; b.style.color = '#fff'; b.style.border = '2px solid transparent';
-                    } else {
-                        b.style.background = 'transparent'; b.style.color = colors[x]; b.style.border = '2px solid ' + colors[x];
-                    }
-                } 
+                const b = document.getElementById('btn-m-'+x); if(b) { if(x === m) { b.style.background = colors[x]; b.style.color = '#fff'; b.style.border = '2px solid transparent'; } else { b.style.background = 'transparent'; b.style.color = colors[x]; b.style.border = '2px solid ' + colors[x]; } } 
             }); 
             const twc = document.getElementById('to-wallet-container'); if(twc) twc.classList.toggle('hide', m!=='transfer'); 
         }
 
         /**
-         * 5. SYSTEM CORE
+         * 6. SYSTEM BOOTSTRAP
          */
         function initHistorySystem() {
             window.history.pushState({ view: window.activeView }, "");
             window.onpopstate = function() {
                 const activeEl = document.activeElement;
-                if(activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.tagName === 'SELECT')) {
-                    activeEl.blur(); window.history.pushState({ view: window.activeView }, ""); return;
-                }
-                if (window.currentUser) {
-                    if (window.activeView !== 'finance') { switchView('finance'); window.history.pushState({ view: 'finance' }, ""); }
-                    else { toggleModal('modal-exit'); window.history.pushState({ view: 'finance' }, ""); }
-                } else { toggleModal('modal-exit'); window.history.pushState({ view: 'login' }, ""); }
+                if(activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.tagName === 'SELECT')) { activeEl.blur(); window.history.pushState({ view: window.activeView }, ""); return; }
+                if (window.currentUser) { if (window.activeView !== 'finance') { switchView('finance'); window.history.pushState({ view: 'finance' }, ""); } else { toggleModal('modal-exit'); window.history.pushState({ view: 'finance' }, ""); } } else { toggleModal('modal-exit'); window.history.pushState({ view: 'login' }, ""); }
             };
         }
 
         function initApp() { 
-            setInterval(() => { const cd = document.getElementById('clock-display'); if(cd) cd.innerText = new Date().toLocaleTimeString('id-ID'); }, 1000); 
+            setInterval(() => { updateTimeAndDate(); }, 1000); 
             updateUI(); renderPickers(); initHistorySystem(); 
             setTxMode('income');
+            initOfflineService(); 
         }
 
         // Object Assign for Global Handlers
@@ -622,12 +634,7 @@
             } else { initHistorySystem(); }
         };
 
-        window.addEventListener("scroll", function() { 
-            let st = window.pageYOffset || document.documentElement.scrollTop; 
-            const nav = document.getElementById('bottom-nav'); 
-            if (nav) { if (st > window.lastScrollTop && st > 50) nav.classList.add('nav-hidden'); else nav.classList.remove('nav-hidden'); } 
-            window.lastScrollTop = st <= 0 ? 0 : st; 
-        }, false);
+        window.addEventListener("scroll", function() { let st = window.pageYOffset || document.documentElement.scrollTop; const nav = document.getElementById('bottom-nav'); if (nav) { if (st > window.lastScrollTop && st > 50) nav.classList.add('nav-hidden'); else nav.classList.remove('nav-hidden'); } window.lastScrollTop = st <= 0 ? 0 : st; }, false);
     </script>
 </body>
 </html>
