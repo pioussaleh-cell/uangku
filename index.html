@@ -205,12 +205,11 @@
 
     <!-- Main App -->
     <div id="main-app" class="container hide">
-        
         <header class="header-sticky">
             <div class="section" style="padding: 20px 25px;">
                 <div class="flex">
                     <div style="text-align: left;">
-                        <span id="full-date" class="text-xs" style="color:var(--primary); opacity: 0.8; margin-bottom: 4px; display: block; font-weight: 800;">MEMUAT TANGGAL...</span>
+                        <span id="full-date" class="text-xs" style="color:var(--primary); opacity: 0.8; margin-bottom: 4px; display: block; font-weight: 800; font-size: 0.6rem;">MEMUAT TANGGAL...</span>
                         <h1 id="welcome-text" style="text-align: left; text-transform: none; font-size: 1.4rem;">Halo, User 👋</h1>
                     </div>
                     <label class="toggle-switch">
@@ -324,7 +323,7 @@
             <div class="app-shell"><div class="section"><h1>Profil & Keamanan</h1><input type="text" id="edit-name" class="input-hd" placeholder="Nama Tampilan Baru"><input type="text" id="edit-user" class="input-hd" placeholder="Username Baru"><input type="password" id="edit-pass" class="input-hd" placeholder="Sandi Baru (Opsional)"><button onclick="updateProfile()" class="btn-main" style="background: var(--text-main);">SIMPAN PERUBAHAN</button></div></div>
             <div class="app-shell"><div class="section"><h1>Menu Dompet</h1><div id="wallet-type-picker" class="flex gap-2" style="margin-bottom: 25px; justify-content: center;"><div onclick="selectWalletIcon('💳')" class="wallet-icon-item" data-icon="💳">💳</div><div onclick="selectWalletIcon('📱')" class="wallet-icon-item" data-icon="📱">📱</div><div onclick="selectWalletIcon('💵')" class="wallet-icon-item" data-icon="💵">💵</div><div onclick="selectWalletIcon('🏦')" class="wallet-icon-item" data-icon="🏦">🏦</div></div><div class="flex gap-2"><input type="text" id="new-wallet-name" class="input-hd" placeholder="Nama Dompet" style="margin:0;"><button onclick="addNewWallet()" class="nav-btn" style="background:var(--success); color:white; width: 65px; height: 50px; border-radius: 20px;">+</button></div><div id="wallets-manage-list" style="margin-top:25px;"></div></div></div>
             <div class="app-shell"><div class="section"><h1>Menu Kategori</h1><div class="flex gap-2"><select id="new-cat-icon" class="input-hd" style="width: 75px; margin: 0;"><option value="💸">💸</option><option value="💹">💹</option><option value="🍱">🍱</option><option value="🍿">🍿</option></select><input type="text" id="new-cat-name" class="input-hd" placeholder="Nama Kategori" style="margin:0;"><button onclick="addNewCategory()" class="nav-btn" style="background:var(--primary); color:white; width: 65px; height: 50px; border-radius: 20px;">+</button></div><div id="categories-manage-list" style="margin-top:25px;"></div></div></div>
-            <button onclick="handleLogout()" style="width:100%; padding:22px; border-radius:var(--radius-M); background:#fee2e2; color:#b91c1c; font-weight:800; border:none; cursor:pointer; font-size: 0.9rem; letter-spacing: 1px;">KELUAR SESI</button>
+            <button onclick="handleLogout()" style="width:100%; padding:22px; border-radius:var(--radius-M); background:#fee2e2; color:#b91c1c; font-weight:800; border:none; cursor:pointer;">KELUAR SESI</button>
         </div>
 
         <nav class="bottom-nav" id="bottom-nav">
@@ -371,50 +370,7 @@
         window.promptCallbackFn = null;
 
         /**
-         * 2. CORE UTILITY FUNCTIONS (Hoisted)
-         */
-        function formatRupiah(n) { return "Rp " + (n || 0).toLocaleString('id-ID'); }
-        function parseFormattedValue(str) { if(!str) return 0; return parseFloat(String(str).replace(/\./g, "")) || 0; }
-        function formatAmountInput(input) { if(!input) return; let v = input.value.replace(/\D/g, ""); input.value = v.replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
-        function showNotice(msg) { const t = document.getElementById('toast'); if(t){ t.innerText = msg; t.style.opacity = 1; t.style.transform = "translateX(-50%) translateY(0)"; setTimeout(() => { t.style.opacity = 0; t.style.transform = "translateX(-50%) translateY(-20px)"; }, 2000); } }
-        function toggleModal(id) { const m = document.getElementById(id); if(m) m.classList.toggle('active'); }
-        function applyTheme(isDark) { document.body.setAttribute('data-theme', isDark ? 'dark' : 'light'); try { localStorage.setItem('kf_theme', isDark ? 'dark' : 'light'); } catch(e){} }
-        function selectWalletIcon(icon) { window.selectedWalletIcon = icon; document.querySelectorAll('.wallet-icon-item').forEach(el => { el.classList.toggle('selected', el.getAttribute('data-icon') === icon); }); }
-
-        function updateTimeAndDate() {
-            const now = new Date();
-            const clockEl = document.getElementById('clock-display');
-            const dateEl = document.getElementById('full-date');
-            if(clockEl) clockEl.innerText = now.toLocaleTimeString('id-ID');
-            if(dateEl) {
-                const optMas = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
-                const masehi = now.toLocaleDateString('id-ID', optMas).toUpperCase();
-                // Simple Hijri fallback calculation if Intl not fully supported or for offline safety
-                const hijri = new Intl.DateTimeFormat('id-ID-u-ca-islamic', { day: 'numeric', month: 'long', year: 'numeric' }).format(now);
-                dateEl.innerText = `${masehi} • ${hijri.toUpperCase()}`;
-            }
-        }
-
-        // --- GLOBALIZED OFFLINE PWA ---
-        function initOfflineService() {
-            if ('serviceWorker' in navigator) {
-                const swCode = `
-                    const CACHE_NAME = 'keuanganku-v2';
-                    self.addEventListener('install', (e) => {
-                        e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll([location.href])));
-                    });
-                    self.addEventListener('fetch', (e) => {
-                        e.respondWith(caches.match(e.request).then((res) => res || fetch(e.request)));
-                    });
-                `;
-                const blob = new Blob([swCode], { type: 'text/javascript' });
-                const swUrl = URL.createObjectURL(blob);
-                navigator.serviceWorker.register(swUrl).catch(() => {});
-            }
-        }
-
-        /**
-         * 3. DATA PERSISTENCE & LOADING
+         * 2. DATA PERSISTENCE
          */
         function saveData() {
             if(!window.currentUser) return;
@@ -433,8 +389,6 @@
         function loadUserData() {
             if(!window.currentUser) return;
             const uid = window.currentUser.id;
-            
-            // Inisialisasi Default Categories
             const defaultCats = [
                 { icon: '🍱', name: 'Makan' }, { icon: '🛒', name: 'Belanja' }, 
                 { icon: '☕', name: 'Jajan' }, { icon: '🚌', name: 'Transport' }, 
@@ -458,13 +412,34 @@
             
             const limit = 30 * 24 * 60 * 60 * 1000; const now = Date.now();
             window.transactions = window.transactions.filter(t => (now - (t.timestamp || 0)) < limit);
-            
             window.selectedTxCategory = window.categories[0]; 
             window.selectedBudgetCategory = window.categories[0];
             
             if(document.getElementById('edit-user')) document.getElementById('edit-user').value = window.currentUser.username;
             if(document.getElementById('edit-name')) document.getElementById('edit-name').value = window.currentUser.displayName || "";
             saveData();
+        }
+
+        /**
+         * 3. UTILITIES
+         */
+        function formatRupiah(n) { return "Rp " + (n || 0).toLocaleString('id-ID'); }
+        function parseFormattedValue(str) { if(!str) return 0; return parseFloat(String(str).replace(/\./g, "")) || 0; }
+        function formatAmountInput(input) { if(!input) return; let v = input.value.replace(/\D/g, ""); input.value = v.replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
+        function showNotice(msg) { const t = document.getElementById('toast'); if(t){ t.innerText = msg; t.style.opacity = 1; t.style.transform = "translateX(-50%) translateY(0)"; setTimeout(() => { t.style.opacity = 0; t.style.transform = "translateX(-50%) translateY(-20px)"; }, 2000); } }
+        function toggleModal(id) { const m = document.getElementById(id); if(m) m.classList.toggle('active'); }
+        function applyTheme(isDark) { document.body.setAttribute('data-theme', isDark ? 'dark' : 'light'); try { localStorage.setItem('kf_theme', isDark ? 'dark' : 'light'); } catch(e){} }
+        function selectWalletIcon(icon) { window.selectedWalletIcon = icon; document.querySelectorAll('.wallet-icon-item').forEach(el => { el.classList.toggle('selected', el.getAttribute('data-icon') === icon); }); }
+
+        function updateTimeAndDate() {
+            const now = new Date();
+            const dateEl = document.getElementById('full-date');
+            if(dateEl) {
+                const optMas = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+                const masehi = now.toLocaleDateString('id-ID', optMas).toUpperCase();
+                const hijri = new Intl.DateTimeFormat('id-ID-u-ca-islamic', { day: 'numeric', month: 'long', year: 'numeric' }).format(now);
+                dateEl.innerText = `${masehi} • ${hijri.toUpperCase()}`;
+            }
         }
 
         /**
@@ -479,12 +454,12 @@
         }
         function renderGoals() {
             const gl = document.getElementById('goals-list'); if(!gl) return;
-            gl.innerHTML = window.goals.length === 0 ? '<p style="text-align:center; opacity:0.3;">Belum ada target.</p>' : '';
+            gl.innerHTML = window.goals.length === 0 ? '<p style="text-align:center; opacity:0.3;">Kosong</p>' : '';
             window.goals.forEach(g => { const p = Math.min(Math.round((g.current/g.target)*100), 100); gl.innerHTML += `<div class="chart-container" style="background: var(--card-bg); border: 2px solid var(--border);"><div class="flex"><b>${g.name}</b><span style="font-weight:900; color:var(--primary);">${p}%</span></div><div class="glow-bar" style="height: 10px;"><div class="glow-fill-inc" style="width:${p}%"></div></div><div class="flex" style="margin-top:12px; font-size:0.75rem; font-weight:800;"><span>${formatRupiah(g.current)}</span><span class="text-muted">Target: ${formatRupiah(g.target)}</span></div><div style="text-align:right; margin-top:15px;"><button onclick="openPromptModal('Update', ${g.current}, (v)=>{updateGoalAction('${g.id}', v)})" style="background:var(--primary); border:none; color:white; font-weight:800; font-size:0.65rem; padding:5px 12px; border-radius:10px;">UPDATE</button><button onclick="openConfirmModal('Hapus?', ()=>{deleteGoalAction('${g.id}')})" style="background:rgba(225, 29, 72, 0.1); border:none; color:var(--danger); font-weight:800; font-size:0.65rem; margin-left:10px; padding:5px 12px; border-radius:10px;">HAPUS</button></div></div>`; });
         }
         function renderBudgets() {
             const bl = document.getElementById('budget-list'); if(!bl) return;
-            bl.innerHTML = window.budgets.length === 0 ? '<p style="text-align:center; opacity:0.3;">Belum ada limit.</p>' : '';
+            bl.innerHTML = window.budgets.length === 0 ? '<p style="text-align:center; opacity:0.3;">Kosong</p>' : '';
             window.budgets.forEach(b => {
                 const spent = window.transactions.filter(t => t.type === 'expense' && t.catIcon === b.icon).reduce((acc, curr) => acc + curr.amount, 0);
                 const percent = Math.min(Math.round((spent / b.limit) * 100), 100);
@@ -493,6 +468,21 @@
                 bl.innerHTML += `<div class="chart-container" style="background: var(--card-bg); border: 2px solid var(--border);"><div class="flex"><b style="font-size:0.85rem">${b.icon} ${b.name}</b> ${warningTag} <span style="font-weight:900; color:${color}">${percent}%</span></div><div class="glow-bar" style="height: 8px;"><div style="height:100%; width:${percent}%; background: ${color};"></div></div><div class="flex" style="margin-top:12px; font-size:0.75rem; font-weight:800;"><span>${formatRupiah(spent)}</span><span class="text-muted">Batas: ${formatRupiah(b.limit)}</span></div><div style="text-align:right; margin-top:10px;"><button onclick="openConfirmModal('Hapus limit?', ()=>{deleteBudgetAction('${b.id}')})" style="background:rgba(225, 29, 72, 0.1); border:none; color:var(--danger); font-weight:800; font-size:0.65rem; padding:5px 12px; border-radius:10px;">HAPUS</button></div></div>`;
             });
         }
+        function updateReportChart() {
+            const incValEl = document.getElementById('chart-inc-val'); const expValEl = document.getElementById('chart-exp-val');
+            const incFill = document.getElementById('chart-inc-fill'); const expFill = document.getElementById('chart-exp-fill');
+            if(!incValEl || !expValEl) return;
+            const tIn = window.transactions.filter(t => t.type === 'income').reduce((acc, curr) => acc + curr.amount, 0);
+            const tOut = window.transactions.filter(t => t.type === 'expense').reduce((acc, curr) => acc + curr.amount, 0);
+            incValEl.innerText = formatRupiah(tIn); 
+            expValEl.innerText = formatRupiah(tOut);
+            const total = tIn + tOut; 
+            if(total > 0) { 
+                if(incFill) incFill.style.width = Math.round((tIn/total)*100)+'%'; 
+                if(expFill) expFill.style.width = Math.round((tOut/total)*100)+'%'; 
+            }
+        }
+
         function updateUI() {
             if(!window.currentUser) return;
             let total = 0; const wc = document.getElementById('wallets-container'); const ws = document.getElementById('wallet-select'); const wts = document.getElementById('wallet-to-select');
@@ -505,46 +495,44 @@
             });
             const tb = document.getElementById('total-balance'); if(tb) tb.innerText = formatRupiah(total);
             const list = document.getElementById('transaction-list');
-            if (list) { list.innerHTML = window.transactions.length === 0 ? '<p style="text-align:center; opacity:0.3; padding:40px;">Belum ada riwayat</p>' : ''; window.transactions.slice().reverse().forEach(t => { list.innerHTML += `<div class="item-row" style="background:var(--card-bg); border:1.5px solid var(--border);"><div><b style="font-size:0.85rem;">${(t.catName || 'Umum').toUpperCase()}</b><br><small style="font-size:0.65rem; color:var(--text-muted); font-weight:700;">${t.date}</small></div><div style="font-weight:900; font-size: 0.85rem; color:${t.type=='income'?'var(--success)':'var(--danger)'}">${formatRupiah(t.amount)}</div></div>`; }); }
+            if (list) { list.innerHTML = window.transactions.length === 0 ? '<p style="text-align:center; opacity:0.3; padding:40px;">Belum ada riwayat</p>' : ''; 
+                window.transactions.slice().reverse().forEach(t => { 
+                    const displayDesc = t.desc && t.desc.length > 30 ? t.desc.substring(0, 30) + '...' : (t.desc || '');
+                    list.innerHTML += `<div class="item-row" style="background:var(--card-bg); border:1.5px solid var(--border);">
+                        <div style="display:flex; gap:14px; align-items:center; flex:1; overflow:hidden;">
+                            <div style="font-size:1.2rem; flex-shrink:0;">${t.catIcon || '💰'}</div>
+                            <div style="min-width:0;">
+                                <b style="font-size:0.8rem; display:block; line-height:1.1;">${(t.catName || 'Umum').toUpperCase()}</b>
+                                <span style="font-size:0.65rem; color:var(--text-main); opacity:0.7; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${displayDesc}</span>
+                                <small style="font-size:0.6rem; color:var(--text-muted); font-weight: 700;">${t.date}</small>
+                            </div>
+                        </div>
+                        <div style="font-weight:900; font-size: 0.85rem; color:${t.type=='income'?'var(--success)':'var(--danger)'}; flex-shrink:0; margin-left:10px;">
+                            ${formatRupiah(t.amount)}
+                        </div>
+                    </div>`; 
+                }); 
+            }
             renderBills(); renderGoals(); renderBudgets(); renderCategoriesManage(); renderWalletsManage(); updateReportChart();
             const welcomeText = document.getElementById('welcome-text'); if(welcomeText) welcomeText.innerText = `Halo, ${(window.currentUser.displayName || window.currentUser.username)} 👋`;
         }
-        function renderCategoriesManage() { const l = document.getElementById('categories-manage-list'); if(!l) return; l.innerHTML = ''; window.categories.forEach((cat, idx) => { l.innerHTML += `<div class="item-row" style="background:var(--input-bg);"><span>${cat.icon} ${cat.name}</span>${idx > 5 ? `<button onclick="openConfirmModal('Hapus?', ()=>{deleteCategoryAction(${idx})})" style="color:var(--danger); border:none; background:none; font-weight:800; font-size:0.75rem;">HAPUS</button>` : '<small style="opacity:0.3; font-size:0.55rem; font-weight:800;">SISTEM</small>'}</div>`; }); }
-        function renderWalletsManage() { const l = document.getElementById('wallets-manage-list'); if(!l) return; l.innerHTML = ''; window.wallets.forEach(w => { l.innerHTML += `<div class="item-row" style="background:var(--input-bg);"><span>${w.icon || '🏦'} ${w.name}</span><div style="display:flex; gap:12px;"><button onclick="openPromptModal('Update Saldo', ${w.balance}, (v)=>{updateWalletAction('${w.id}', v)})" style="color:var(--primary); border:none; background:none; font-weight:800; cursor:pointer; font-size:0.7rem;">UPDATE</button><button onclick="openConfirmModal('Hapus dompet?', ()=>{deleteWalletAction('${w.id}')})" style="color:var(--danger); border:none; background:none; font-weight:800; cursor:pointer; font-size:0.7rem;">HAPUS</button></div></div>`; }); }
-        function renderPickers() {
-            const tp = document.getElementById('tx-icon-picker'); if(tp){ tp.innerHTML = ''; window.categories.forEach(cat => { const d = document.createElement('div'); d.className = `category-item ${cat.icon === (window.selectedTxCategory && window.selectedTxCategory.icon) ? 'selected' : ''}`; d.innerHTML = `<span>${cat.icon}</span><span>${cat.name}</span>`; d.onclick = () => { window.selectedTxCategory = cat; renderPickers(); }; tp.appendChild(d); }); }
-            const bp = document.getElementById('budget-icon-picker'); if(bp){ bp.innerHTML = ''; window.categories.forEach(cat => { const d = document.createElement('div'); d.className = `category-item ${cat.icon === (window.selectedBudgetCategory && window.selectedBudgetCategory.icon) ? 'selected' : ''}`; d.innerHTML = `<span>${cat.icon}</span><span>${cat.name}</span>`; d.onclick = () => { window.selectedBudgetCategory = cat; renderPickers(); }; bp.appendChild(d); }); }
-            selectWalletIcon(window.selectedWalletIcon);
-        }
-        function updateReportChart() {
-            const incFill = document.getElementById('chart-inc-fill'); const expFill = document.getElementById('chart-exp-fill');
-            const tIn = window.transactions.filter(t => t.type === 'income').reduce((acc, curr) => acc + curr.amount, 0);
-            const tOut = window.transactions.filter(t => t.type === 'expense').reduce((acc, curr) => acc + curr.amount, 0);
-            document.getElementById('chart-inc-val').innerText = formatRupiah(tIn); document.getElementById('chart-exp-val').innerText = formatRupiah(tOut);
-            const total = tIn + tOut; if(total > 0) { if(incFill) incFill.style.width = Math.round((tIn/total)*100)+'%'; if(expFill) expFill.style.width = Math.round((tOut/total)*100)+'%'; }
-        }
 
         /**
-         * 5. BUSINESS ACTIONS
+         * 5. ACTIONS
          */
-        function checkBudgetWarning(categoryIcon, newExpenseAmount) {
-            const budget = window.budgets.find(b => b.icon === categoryIcon);
-            if (!budget) return;
-            const currentSpent = window.transactions.filter(t => t.type === 'expense' && t.catIcon === categoryIcon).reduce((acc, curr) => acc + curr.amount, 0);
-            if (currentSpent + newExpenseAmount > budget.limit) { showNotice(`⚠️ Anggaran ${budget.name} melampaui batas!`); }
-        }
-
         function handleLogin() {
             const uInput = document.getElementById('login-user'); const pInput = document.getElementById('login-pass');
             if(!uInput || !pInput) return;
             const u = uInput.value.trim(); const p = pInput.value.trim();
+            if (!window.users || !Array.isArray(window.users)) {
+                window.users = JSON.parse(localStorage.getItem('kf_users')) || [{ id: 'u_1', username: 'admin', password: '123', displayName: '' }];
+            }
             const user = window.users.find(x => x.username.toLowerCase() === u.toLowerCase() && x.password === p);
             if(user) { window.currentUser = user; try { localStorage.setItem('kf_current_session', JSON.stringify(window.currentUser)); } catch(e){} loadUserData(); document.getElementById('login-screen').classList.add('hide'); document.getElementById('main-app').classList.remove('hide'); initApp(); } 
             else showNotice("Login Gagal");
         }
         function handleLogout() { try { localStorage.removeItem('kf_current_session'); } catch(e){} location.reload(); }
         function switchView(id) { window.activeView = id; ['finance', 'goals', 'bills', 'budget', 'report', 'options'].forEach(v => { const el = document.getElementById('view-' + v); const nav = document.getElementById('nav-' + v); if (el) el.classList.add('hide'); if (nav) nav.classList.remove('active'); }); const tv = document.getElementById('view-' + id); const tn = document.getElementById('nav-' + id); if(tv) tv.classList.remove('hide'); if(tn) tn.classList.add('active'); window.history.pushState({ view: id }, ""); }
-        
         function processTransaction() {
             const amount = parseFormattedValue(document.getElementById('amount').value); const desc = document.getElementById('desc').value.trim(); const wId = document.getElementById('wallet-select').value;
             if(amount <= 0) return showNotice("Isi nominal!"); const w = window.wallets.find(x => x.id === wId);
@@ -557,15 +545,21 @@
             window.transactions.push({ id: Date.now(), desc: desc.toUpperCase(), amount, type: window.currentTxMode, wallet: w.name, catIcon: window.selectedTxCategory.icon, catName: window.selectedTxCategory.name, date: new Date().toLocaleDateString('id-ID'), timestamp: Date.now() });
             saveData(); updateUI(); document.getElementById('desc').value = ''; document.getElementById('amount').value = ''; showNotice("Berhasil!");
         }
-
-        function addNewBill() { const n = document.getElementById('bill-name').value; const d = document.getElementById('bill-date').value; const a = parseFormattedValue(document.getElementById('bill-amount').value); const isVar = document.getElementById('bill-is-variable').checked; if(!n || !d) return showNotice("LENGKAPI FORM!"); window.bills.push({ id: 'bl_'+Date.now(), name: n.toUpperCase(), date: d, amount: a, isVariable: isVar }); saveData(); updateUI(); showNotice("Tagihan ditambah!"); document.getElementById('bill-name').value = ''; document.getElementById('bill-amount').value = ''; }
-        function initPayment(id) { window.pendingBill = window.bills.find(x => x.id == id); document.getElementById('pay-detail').innerText = `${window.pendingBill.name} (${window.pendingBill.isVariable ? 'Nominal Variabel' : formatRupiah(window.pendingBill.amount)})`; if(window.pendingBill.isVariable) document.getElementById('variable-amount-container').classList.remove('hide'); else document.getElementById('variable-amount-container').classList.add('hide'); const sel = document.getElementById('pay-wallet-select'); if(sel) { sel.innerHTML = ''; window.wallets.forEach(w => sel.innerHTML += `<option value="${w.id}">${w.icon || '🏦'} ${w.name} (${formatRupiah(w.balance)})</option>`); } toggleModal('pay-confirm-modal'); }
+        function renderCategoriesManage() { const l = document.getElementById('categories-manage-list'); if(!l) return; l.innerHTML = ''; window.categories.forEach((cat, idx) => { l.innerHTML += `<div class="item-row" style="background:var(--input-bg);"><span>${cat.icon} ${cat.name}</span>${idx > 5 ? `<button onclick="openConfirmModal('Hapus?', ()=>{deleteCategoryAction(${idx})})" style="color:var(--danger); border:none; background:none; font-weight:800; font-size:0.75rem;">HAPUS</button>` : '<small style="opacity:0.3; font-size:0.55rem; font-weight:800;">SISTEM</small>'}</div>`; }); }
+        function renderWalletsManage() { const l = document.getElementById('wallets-manage-list'); if(!l) return; l.innerHTML = ''; window.wallets.forEach(w => { l.innerHTML += `<div class="item-row" style="background:var(--input-bg);"><span>${w.icon || '🏦'} ${w.name}</span><div style="display:flex; gap:12px;"><button onclick="openPromptModal('Update', ${w.balance}, (v)=>{updateWalletAction('${w.id}', v)})" style="color:var(--primary); border:none; background:none; font-weight:800; font-size:0.75rem;">UPDATE</button><button onclick="openConfirmModal('Hapus?', ()=>{deleteWalletAction('${w.id}')})" style="color:var(--danger); border:none; background:none; font-weight:800; font-size:0.75rem;">HAPUS</button></div></div>`; }); }
+        function renderPickers() {
+            const tp = document.getElementById('tx-icon-picker'); if(tp){ tp.innerHTML = ''; window.categories.forEach(cat => { const d = document.createElement('div'); d.className = `category-item ${cat.icon === (window.selectedTxCategory && window.selectedTxCategory.icon) ? 'selected' : ''}`; d.innerHTML = `<span>${cat.icon}</span><span>${cat.name}</span>`; d.onclick = () => { window.selectedTxCategory = cat; renderPickers(); }; tp.appendChild(d); }); }
+            const bp = document.getElementById('budget-icon-picker'); if(bp){ bp.innerHTML = ''; window.categories.forEach(cat => { const d = document.createElement('div'); d.className = `category-item ${cat.icon === (window.selectedBudgetCategory && window.selectedBudgetCategory.icon) ? 'selected' : ''}`; d.innerHTML = `<span>${cat.icon}</span><span>${cat.name}</span>`; d.onclick = () => { window.selectedBudgetCategory = cat; renderPickers(); }; bp.appendChild(d); }); }
+            selectWalletIcon(window.selectedWalletIcon);
+        }
+        function addNewBill() { const n = document.getElementById('bill-name').value; const d = document.getElementById('bill-date').value; const a = parseFormattedValue(document.getElementById('bill-amount').value); const isVar = document.getElementById('bill-is-variable').checked; if(!n || !d) return showNotice("Isi form!"); window.bills.push({ id: 'bl_'+Date.now(), name: n.toUpperCase(), date: d, amount: a, isVariable: isVar }); saveData(); updateUI(); showNotice("Tagihan ditambah!"); }
+        function initPayment(id) { window.pendingBill = window.bills.find(x => x.id == id); document.getElementById('pay-detail').innerText = `${window.pendingBill.name}`; if(window.pendingBill.isVariable) document.getElementById('variable-amount-container').classList.remove('hide'); else document.getElementById('variable-amount-container').classList.add('hide'); const sel = document.getElementById('pay-wallet-select'); if(sel) { sel.innerHTML = ''; window.wallets.forEach(w => sel.innerHTML += `<option value="${w.id}">${w.icon || '🏦'} ${w.name}</option>`); } toggleModal('pay-confirm-modal'); }
         function confirmPayment() { const wId = document.getElementById('pay-wallet-select').value; const w = window.wallets.find(x => x.id === wId); let final = window.pendingBill.isVariable ? parseFormattedValue(document.getElementById('pay-actual-amount').value) : window.pendingBill.amount; if(final <= 0) return showNotice("Isi nominal!"); w.balance -= final; window.transactions.push({ id: Date.now(), desc: `BAYAR: ${window.pendingBill.name}`, amount: final, type: 'expense', wallet: w.name, catIcon: '💡', catName: 'Tagihan', date: new Date().toLocaleDateString('id-ID'), timestamp: Date.now() }); const d = new Date(window.pendingBill.date); d.setMonth(d.getMonth() + 1); window.pendingBill.date = d.toISOString().split('T')[0]; saveData(); updateUI(); toggleModal('pay-confirm-modal'); showNotice("Selesai!"); }
-        function addNewGoal() { const n = document.getElementById('goal-name').value.trim(); const t = parseFormattedValue(document.getElementById('goal-target').value); if(!n || t <= 0) return showNotice("Isi data!"); window.goals.push({ id: 'g_'+Date.now(), name: n.toUpperCase(), target: t, current: 0 }); saveData(); updateUI(); document.getElementById('goal-name').value = ''; document.getElementById('goal-target').value = ''; showNotice("Berhasil!"); }
+        function addNewGoal() { const n = document.getElementById('goal-name').value.trim(); const t = parseFormattedValue(document.getElementById('goal-target').value); if(!n || t <= 0) return showNotice("Isi data!"); window.goals.push({ id: 'g_'+Date.now(), name: n.toUpperCase(), target: t, current: 0 }); saveData(); updateUI(); showNotice("Berhasil!"); }
         function saveBudget() { const limit = parseFormattedValue(document.getElementById('budget-limit').value); if(limit <= 0) return showNotice("Isi limit!"); const exists = window.budgets.findIndex(b => b.icon === window.selectedBudgetCategory.icon); if(exists !== -1) window.budgets[exists].limit = limit; else window.budgets.push({ id: 'b_'+Date.now(), icon: window.selectedBudgetCategory.icon, name: window.selectedBudgetCategory.name, limit: limit }); saveData(); updateUI(); document.getElementById('budget-limit').value = ''; showNotice("Batas disimpan!"); }
         function addNewWallet() { const n = document.getElementById('new-wallet-name').value.trim(); if(!n) return showNotice("Isi nama!"); window.wallets.push({ id: 'w_'+Date.now(), name: n.toUpperCase(), balance: 0, icon: window.selectedWalletIcon }); document.getElementById('new-wallet-name').value = ''; saveData(); updateUI(); showNotice("Dompet baru!"); }
         function addNewCategory() { const n = document.getElementById('new-cat-name').value.trim(); const i = document.getElementById('new-cat-icon').value; if(!n) return showNotice("Isi nama!"); window.categories.push({ icon: i, name: n.substring(0, 10) }); saveData(); updateUI(); renderPickers(); document.getElementById('new-cat-name').value = ''; showNotice("Ditambah!"); }
-        function updateProfile() { const dn = document.getElementById('edit-name').value.trim(); const u = document.getElementById('edit-user').value.trim(); const p = document.getElementById('edit-pass').value.trim(); if(!u) return showNotice("User wajib!"); window.currentUser.username = u; window.currentUser.displayName = dn; if(p) window.currentUser.password = p; const idx = window.users.findIndex(us => us.id === window.currentUser.id); if(idx!==-1) window.users[idx] = window.currentUser; try { localStorage.setItem('kf_current_session', JSON.stringify(window.currentUser)); } catch(e){} saveData(); loadUserData(); showNotice("Selesai!"); }
+        function updateProfile() { const dn = document.getElementById('edit-name').value.trim(); const u = document.getElementById('edit-user').value.trim(); const p = document.getElementById('edit-pass').value.trim(); if(!u) return showNotice("User wajib!"); window.currentUser.username = u; window.currentUser.displayName = dn; if(p) window.currentUser.password = p; const idx = window.users.findIndex(us => us.id === window.currentUser.id); if(idx!==-1) window.users[idx] = window.currentUser; saveData(); loadUserData(); showNotice("Selesai!"); }
 
         function deleteWalletAction(id) { window.wallets = window.wallets.filter(w => w.id != id); saveData(); updateUI(); }
         function updateWalletAction(id, val) { const w = window.wallets.find(x => x.id === id); if(w) w.balance = parseFormattedValue(val); saveData(); updateUI(); }
@@ -578,9 +572,9 @@
 
         function openConfirmModal(msg, callback) { document.getElementById('confirm-msg').innerText = msg; window.confirmCallbackFn = callback; toggleModal('modal-confirm'); }
         function closeConfirm(result) { toggleModal('modal-confirm'); if (result && window.confirmCallbackFn) window.confirmCallbackFn(); window.confirmCallbackFn = null; }
-        function openPromptModal(title, defaultVal, callback) { document.getElementById('prompt-title').innerText = title; document.getElementById('prompt-input').value = defaultVal.toLocaleString('id-ID'); window.promptCallbackFn = callback; toggleModal('modal-prompt'); }
+        function openPromptModal(title, defaultVal, callback) { document.getElementById('prompt-title').innerText = title; document.getElementById('prompt-input').value = (defaultVal || 0).toLocaleString('id-ID'); window.promptCallbackFn = callback; toggleModal('modal-prompt'); }
         function closePrompt(result) { const val = document.getElementById('prompt-input').value; toggleModal('modal-prompt'); if (result && window.promptCallbackFn) window.promptCallbackFn(val); window.promptCallbackFn = null; }
-        function closeExitModal(confirmExit) { toggleModal('modal-exit'); if (confirmExit) { showNotice("Sesi ditutup."); } }
+        function closeExitModal(confirmExit) { toggleModal('modal-exit'); if (confirmExit) { showNotice("Sesi tutup."); } }
 
         function setTxMode(m) { 
             window.currentTxMode = m; 
@@ -592,7 +586,27 @@
         }
 
         /**
-         * 6. SYSTEM BOOTSTRAP
+         * 6. OFFLINE PWA Logic
+         */
+        function initOfflineService() {
+            if ('serviceWorker' in navigator) {
+                const swCode = `
+                    const CACHE_NAME = 'keuanganku-v2';
+                    self.addEventListener('install', (e) => {
+                        e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll([location.href])));
+                    });
+                    self.addEventListener('fetch', (e) => {
+                        e.respondWith(caches.match(e.request).then((res) => res || fetch(e.request)));
+                    });
+                `;
+                const blob = new Blob([swCode], { type: 'text/javascript' });
+                const swUrl = URL.createObjectURL(blob);
+                navigator.serviceWorker.register(swUrl).catch(() => {});
+            }
+        }
+
+        /**
+         * 7. SYSTEM BOOTSTRAP
          */
         function initHistorySystem() {
             window.history.pushState({ view: window.activeView }, "");
@@ -610,7 +624,7 @@
             initOfflineService(); 
         }
 
-        // Object Assign for Global Handlers
+        // Global Bindings
         Object.assign(window, {
             handleLogin, applyTheme, switchView, toggleModal, setTxMode, formatAmountInput, 
             processTransaction, addNewGoal, saveBudget, updateProfile, addNewWallet, 
