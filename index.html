@@ -248,9 +248,9 @@
                         <div id="to-wallet-container" class="hide"><p class="text-xs" style="margin-bottom:8px; color:var(--primary); font-weight: 800;">KE TUJUAN</p><select id="wallet-to-select" class="input-hd" style="margin:0;"></select></div>
                     </div>
                     <input type="text" id="desc" placeholder="Keterangan transaksi..." class="input-hd" style="margin-top: 15px;">
-                    <input type="text" inputmode="numeric" id="amount" placeholder="0" class="input-hd" style="font-size:1.8rem; text-align:center; padding: 24px; color: var(--primary); border: 2px dashed var(--primary-glow); margin-bottom: 15px;" oninput="formatAmountInput(this)">
+                    <input type="text" inputmode="numeric" id="amount" placeholder="0" class="input-hd" style="font-size:1.8rem; text-align:center; padding: 24px; color: var(--primary); border: 2px dashed var(--primary-glow); margin-bottom: 25px;" oninput="formatAmountInput(this)">
                     
-                    <!-- Tombol Scan dipindahkan ke sini -->
+                    <!-- Tombol Scan -->
                     <button onclick="triggerScan()" class="btn-scan" style="margin-bottom: 25px;">
                         <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                         SCAN STRUK / BUKTI
@@ -357,7 +357,7 @@
         </div>
 
         <nav class="bottom-nav" id="bottom-nav">
-            <div class="nav-item active" id="nav-finance" onclick="switchView('finance')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 01-1-1h-2a1 1 0 01-1-1v-4a1 1 0 01 1-1m-6 0h6"/></svg></div>
+            <div class="nav-item active" id="nav-finance" onclick="switchView('finance')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 01-1 1h-2a1 1 0 01-1-1v-4a1 1 0 01 1-1m-6 0h6"/></svg></div>
             <div class="nav-item" id="nav-bills" onclick="switchView('bills')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg></div>
             <div class="nav-item" id="nav-goals" onclick="switchView('goals')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div>
             <div class="nav-item" id="nav-budget" onclick="switchView('budget')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055zM20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/></svg></div>
@@ -412,39 +412,42 @@
         function applyTheme(isDark) { document.body.setAttribute('data-theme', isDark ? 'dark' : 'light'); try { localStorage.setItem('kf_theme', isDark ? 'dark' : 'light'); } catch(e){} }
         function selectWalletIcon(icon) { window.selectedWalletIcon = icon; document.querySelectorAll('.wallet-icon-item').forEach(el => { el.classList.toggle('selected', el.getAttribute('data-icon') === icon); }); }
 
-        function triggerScan() { document.getElementById('scan-input').click(); }
+        async function triggerScan() { document.getElementById('scan-input').click(); }
         
         async function handleFileScan(input) {
             if (input.files && input.files[0]) {
                 const file = input.files[0];
                 showNotice("Memindai... Mohon tunggu");
                 try {
-                    const { data: { text } } = await Tesseract.recognize(file, 'eng');
-                    const amount = extractAmountFromText(text);
-                    if (amount > 0) {
-                        document.getElementById('amount').value = formatRupiah(amount).replace('Rp ', '');
-                        if(!document.getElementById('desc').value) document.getElementById('desc').value = "Scan Struk";
-                        showNotice("Nominal: " + formatRupiah(amount));
-                    } else { showNotice("Gagal deteksi nominal."); }
+                    const { data: { text } } = await Tesseract.recognize(file, 'ind');
+                    // Improved Regex for Indonesian currency formats
+                    // Matches: 100.000, 100000, 100.000,00
+                    const cleanText = text.replace(/[^0-9.,]/g, ' ');
+                    const matches = cleanText.match(/\b\d{1,3}(?:[.]\d{3})*(?:,\d+)?\b|\b\d+\b/g); 
+                    
+                    if (matches && matches.length > 0) {
+                        let maxVal = 0;
+                        matches.forEach(m => {
+                            let n = m;
+                            // Normalisasi: Hapus titik ribuan, ganti koma desimal jadi titik
+                            n = n.replace(/\./g, '').replace(',', '.');
+                            const val = parseFloat(n);
+                            // Filter angka tidak masuk akal (misal tahun, nomor seri)
+                            // Anggap struk valid antara 1.000 s/d 1 Milyar
+                            if (!isNaN(val) && val > maxVal && val < 1000000000 && val > 1000) {
+                                maxVal = val;
+                            }
+                        });
+                        
+                        if (maxVal > 0) {
+                            document.getElementById('amount').value = formatRupiah(maxVal).replace('Rp ', '');
+                            if(!document.getElementById('desc').value) document.getElementById('desc').value = "Scan Struk";
+                            showNotice("Nominal: " + formatRupiah(maxVal));
+                        } else { showNotice("Angka valid tidak ditemukan."); }
+                    } else { showNotice("Teks tidak terbaca."); }
                 } catch (e) { showNotice("Error scanning."); }
                 input.value = '';
             }
-        }
-
-        function extractAmountFromText(text) {
-            const clean = text.replace(/[^0-9.,\s]/g, ' ');
-            const matches = clean.match(/\b\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?\b/g);
-            if (!matches) return 0;
-            let maxVal = 0;
-            matches.forEach(m => {
-                let n = m;
-                if (m.includes('.') && m.includes(',')) n = m.replace(/\./g, '').replace(',', '.');
-                else if (m.includes('.')) n = m.replace(/\./g, '');
-                else if (m.includes(',')) n = m.replace(',', '.');
-                const v = parseFloat(n);
-                if (!isNaN(v) && v > maxVal && v < 1000000000) maxVal = v;
-            });
-            return maxVal;
         }
 
         function getHijriDate() {
@@ -510,8 +513,9 @@
                 window.bills = JSON.parse(localStorage.getItem(`kf_bills_${uid}`)) || [];
                 window.goals = JSON.parse(localStorage.getItem(`kf_goals_${uid}`)) || [];
                 window.budgets = JSON.parse(localStorage.getItem(`kf_budgets_${uid}`)) || [];
-                const savedCats = JSON.parse(localStorage.getItem(`kf_cats_${uid}`)); 
-                if(savedCats && Array.isArray(savedCats) && savedCats.length > 0) {
+                const savedCatsRaw = localStorage.getItem(`kf_cats_${uid}`);
+                const savedCats = savedCatsRaw ? JSON.parse(savedCatsRaw) : null;
+                if (savedCats && Array.isArray(savedCats) && savedCats.length > 0) {
                     window.categories = savedCats;
                 } else {
                     window.categories = defaultCats;
@@ -614,7 +618,7 @@
         }
 
         /**
-         * 6. ACTIONS
+         * 5. ACTIONS
          */
         function changeHijriTemp(val) { 
             window.tempHijriAdj += val; 
