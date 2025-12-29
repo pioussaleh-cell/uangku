@@ -348,7 +348,7 @@
     <!-- Modals -->
     <div id="modal-confirm" class="modal"><div class="modal-content" style="text-align: center;"><h3>Konfirmasi</h3><p id="confirm-msg" class="text-muted" style="margin: 20px 0 30px 0;"></p><div class="grid-2" style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;"><button onclick="closeConfirm(false)" class="btn-main" style="background: var(--input-bg); color: var(--text-main); box-shadow: none;">Batal</button><button onclick="closeConfirm(true)" class="btn-main" style="background: var(--danger);">Eksekusi</button></div></div></div>
     <div id="modal-prompt" class="modal"><div class="modal-content"><h3 id="prompt-title" style="margin-bottom: 25px; text-align: center;">Update Nilai</h3><input type="text" id="prompt-input" class="input-hd" style="text-align: center; font-size: 1.7rem; padding: 24px; color: var(--primary);" oninput="formatAmountInput(this)"><div class="grid-2" style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;"><button onclick="closePrompt(false)" class="btn-main" style="background: var(--input-bg); color: var(--text-main); box-shadow: none;">Batal</button><button onclick="closePrompt(true)" class="btn-main">Simpan</button></div></div></div>
-    <div id="pay-confirm-modal" class="modal"><div class="modal-content" style="text-align:center;"><h3>Pembayaran</h3><p id="pay-detail" class="text-muted" style="margin-bottom:20px; font-weight: 800; color: var(--primary);"></p><div id="variable-amount-container" class="hide"><input type="text" id="pay-actual-amount" class="input-hd" style="text-align:center;" oninput="formatAmountInput(this)"></div><select id="pay-wallet-select" class="input-hd" style="text-align:center;"></select><div class="grid-2" style="margin-top: 15px;"><button onclick="toggleModal('pay-confirm-modal')" class="btn-main" style="background:var(--input-bg); color:var(--text-main); box-shadow: none;">Batal</button><button onclick="confirmPayment()" class="btn-main" style="background:var(--success);">Bayar</button></div></div></div>
+    <div id="pay-confirm-modal" class="modal"><div class="modal-content" style="text-align:center;"><h3>Pembayaran</h3><p id="pay-detail" class="text-muted" style="margin-bottom:20px; font-weight: 800; color: var(--primary);"></p><div id="variable-amount-container" class="hide"><input type="text" id="pay-actual-amount" class="input-hd" style="text-align:center;" oninput="formatAmountInput(this)"></div><p class="text-xs" style="margin-bottom:5px; font-weight: 800;">SUMBER DANA</p><select id="pay-wallet-select" class="input-hd" style="text-align:center;"></select><div class="grid-2" style="margin-top: 15px;"><button onclick="toggleModal('pay-confirm-modal')" class="btn-main" style="background:var(--input-bg); color:var(--text-main); box-shadow: none;">Batal</button><button onclick="confirmPayment()" class="btn-main" style="background:var(--success);">Bayar</button></div></div></div>
     <div id="modal-exit" class="modal"><div class="modal-content" style="text-align: center;"><h3>Keluar Sesi?</h3><div class="grid-2" style="margin-top: 25px;"><button onclick="closeExitModal(false)" class="btn-main" style="background: var(--input-bg); color: var(--text-main); box-shadow: none;">Batal</button><button onclick="closeExitModal(true)" class="btn-main">Keluar</button></div></div></div>
 
     <script>
@@ -520,12 +520,15 @@
         function updateUI() {
             if(!window.currentUser) return;
             let total = 0; const wc = document.getElementById('wallets-container'); const ws = document.getElementById('wallet-select'); const wts = document.getElementById('wallet-to-select');
+            const pws = document.getElementById('pay-wallet-select'); 
             if(wc) wc.innerHTML = ''; if(ws) ws.innerHTML = ''; if(wts) wts.innerHTML = '';
+            if(pws) pws.innerHTML = '';
             window.wallets.forEach(w => {
                 total += w.balance;
                 if(wc) wc.innerHTML += `<div class="wallet-card"><div style="font-size: 26px; margin-bottom: 6px;">${w.icon || '🏦'}</div><p class="text-xs" style="margin-bottom: 2px; opacity:0.6; font-weight:800;">${w.name}</p><p style="font-weight:800; margin:0; font-size:1.15rem; color:var(--primary);">${formatRupiah(w.balance)}</p></div>`;
                 if(ws) ws.innerHTML += `<option value="${w.id}">${w.icon || '🏦'} ${w.name}</option>`;
                 if(wts) wts.innerHTML += `<option value="${w.id}">${w.icon || '🏦'} ${w.name}</option>`;
+                if(pws) pws.innerHTML += `<option value="${w.id}">${w.icon || '🏦'} ${w.name} (${formatRupiah(w.balance)})</option>`;
             });
             const tb = document.getElementById('total-balance'); if(tb) tb.innerText = formatRupiah(total);
             const list = document.getElementById('transaction-list');
@@ -551,7 +554,6 @@
             const welcomeText = document.getElementById('welcome-text'); if(welcomeText) welcomeText.innerText = `Halo, ${(window.currentUser.displayName || window.currentUser.username)} 👋`;
             
             if(document.getElementById('hijri-adj-display-opt')) document.getElementById('hijri-adj-display-opt').innerText = (window.hijriAdjustment >= 0 ? '+' : '') + window.hijriAdjustment;
-            if(document.getElementById('hijri-temp-val')) document.getElementById('hijri-temp-val').innerText = (window.tempHijriAdj >= 0 ? '+' : '') + window.tempHijriAdj;
         }
 
         function renderCategoriesManage() { const l = document.getElementById('categories-manage-list'); if(!l) return; l.innerHTML = ''; window.categories.forEach((cat, idx) => { l.innerHTML += `<div class="item-row" style="background:var(--input-bg);"><span>${cat.icon} ${cat.name}</span>${idx > 5 ? `<button onclick="openConfirmModal('Hapus?', ()=>{deleteCategoryAction(${idx})})" style="color:var(--danger); border:none; background:none; font-weight:800; font-size:0.75rem;">HAPUS</button>` : '<small style="opacity:0.3; font-size:0.55rem; font-weight:800;">SISTEM</small>'}</div>`; }); }
@@ -565,7 +567,11 @@
         /**
          * 5. ACTIONS
          */
-        function changeHijriTemp(val) { window.tempHijriAdj += val; document.getElementById('hijri-temp-val').innerText = (window.tempHijriAdj >= 0 ? '+' : '') + window.tempHijriAdj; }
+        function changeHijriTemp(val) { 
+            window.tempHijriAdj += val; 
+            const el = document.getElementById('hijri-adj-display-opt');
+            if(el) el.innerText = (window.tempHijriAdj >= 0 ? '+' : '') + window.tempHijriAdj; 
+        }
         function saveHijriSettings() { window.hijriAdjustment = window.tempHijriAdj; saveData(); updateTimeAndDate(); updateUI(); showNotice("Koreksi Disimpan!"); }
 
         function handleLogin() {
