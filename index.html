@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#4338ca">
 
     <title>KeuanganKu HD - Web Edition Fixed</title>
+    
+    <!-- Tesseract JS untuk OCR (Scan Struk) -->
+    <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
     
     <style>
         /* Desain Santai & Kontras Tinggi (Soft UI) */
@@ -105,6 +107,15 @@
         }
         [data-theme='dark'] .btn-main { color: #020617; font-weight: 800; }
         .btn-main:active { transform: scale(0.95); }
+
+        .btn-scan {
+            background: transparent; color: var(--primary); 
+            border: 2px dashed var(--primary); border-radius: var(--radius-M);
+            padding: 12px; width: 100%; margin-bottom: 25px; font-weight: 700;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            cursor: pointer; transition: 0.2s;
+        }
+        .btn-scan:active { background: var(--primary-glow); }
 
         .input-hd {
             width: 100%; padding: 14px 18px; border-radius: var(--radius-M);
@@ -237,7 +248,15 @@
                         <div id="to-wallet-container" class="hide"><p class="text-xs" style="margin-bottom:8px; color:var(--primary); font-weight: 800;">KE TUJUAN</p><select id="wallet-to-select" class="input-hd" style="margin:0;"></select></div>
                     </div>
                     <input type="text" id="desc" placeholder="Keterangan transaksi..." class="input-hd" style="margin-top: 15px;">
-                    <input type="text" inputmode="numeric" id="amount" placeholder="0" class="input-hd" style="font-size:1.8rem; text-align:center; padding: 24px; color: var(--primary); border: 2px dashed var(--primary-glow); margin-bottom: 25px;" oninput="formatAmountInput(this)">
+                    <input type="text" inputmode="numeric" id="amount" placeholder="0" class="input-hd" style="font-size:1.8rem; text-align:center; padding: 24px; color: var(--primary); border: 2px dashed var(--primary-glow); margin-bottom: 15px;" oninput="formatAmountInput(this)">
+                    
+                    <!-- Tombol Scan dipindahkan ke sini -->
+                    <button onclick="triggerScan()" class="btn-scan" style="margin-bottom: 25px;">
+                        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        SCAN STRUK / BUKTI
+                    </button>
+                    <input type="file" id="scan-input" accept="image/*" style="display:none" onchange="handleFileScan(this)">
+
                     <div class="grid-3" style="margin-bottom: 25px;">
                         <button onclick="setTxMode('income')" id="btn-m-income" class="btn-main" style="background:var(--success); color: #fff;">MASUK</button>
                         <button onclick="setTxMode('expense')" id="btn-m-expense" class="btn-main" style="background:transparent; border: 2px solid var(--danger); color: var(--danger); box-shadow: none;">KELUAR</button>
@@ -355,7 +374,7 @@
 
     <script>
         /**
-         * 1. CORE VARIABLES AND STATE
+         * 1. CORE VARIABLES & STATE
          */
         window.activeView = 'finance';
         window.currentUser = null;
@@ -390,11 +409,43 @@
         function formatAmountInput(input) { if(!input) return; let v = input.value.replace(/\D/g, ""); input.value = v.replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
         function showNotice(msg) { const t = document.getElementById('toast'); if(t){ t.innerText = msg; t.style.opacity = 1; t.style.transform = "translateX(-50%) translateY(0)"; setTimeout(() => { t.style.opacity = 0; t.style.transform = "translateX(-50%) translateY(-20px)"; }, 2000); } }
         function toggleModal(id) { const m = document.getElementById(id); if(m) m.classList.toggle('active'); }
-        function applyTheme(isDark) { 
-            document.body.setAttribute('data-theme', isDark ? 'dark' : 'light'); 
-            try { localStorage.setItem('kf_theme', isDark ? 'dark' : 'light'); } catch(e){} 
-        }
+        function applyTheme(isDark) { document.body.setAttribute('data-theme', isDark ? 'dark' : 'light'); try { localStorage.setItem('kf_theme', isDark ? 'dark' : 'light'); } catch(e){} }
         function selectWalletIcon(icon) { window.selectedWalletIcon = icon; document.querySelectorAll('.wallet-icon-item').forEach(el => { el.classList.toggle('selected', el.getAttribute('data-icon') === icon); }); }
+
+        function triggerScan() { document.getElementById('scan-input').click(); }
+        
+        async function handleFileScan(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                showNotice("Memindai... Mohon tunggu");
+                try {
+                    const { data: { text } } = await Tesseract.recognize(file, 'eng');
+                    const amount = extractAmountFromText(text);
+                    if (amount > 0) {
+                        document.getElementById('amount').value = formatRupiah(amount).replace('Rp ', '');
+                        if(!document.getElementById('desc').value) document.getElementById('desc').value = "Scan Struk";
+                        showNotice("Nominal: " + formatRupiah(amount));
+                    } else { showNotice("Gagal deteksi nominal."); }
+                } catch (e) { showNotice("Error scanning."); }
+                input.value = '';
+            }
+        }
+
+        function extractAmountFromText(text) {
+            const clean = text.replace(/[^0-9.,\s]/g, ' ');
+            const matches = clean.match(/\b\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?\b/g);
+            if (!matches) return 0;
+            let maxVal = 0;
+            matches.forEach(m => {
+                let n = m;
+                if (m.includes('.') && m.includes(',')) n = m.replace(/\./g, '').replace(',', '.');
+                else if (m.includes('.')) n = m.replace(/\./g, '');
+                else if (m.includes(',')) n = m.replace(',', '.');
+                const v = parseFloat(n);
+                if (!isNaN(v) && v > maxVal && v < 1000000000) maxVal = v;
+            });
+            return maxVal;
+        }
 
         function getHijriDate() {
             const date = new Date();
@@ -459,9 +510,8 @@
                 window.bills = JSON.parse(localStorage.getItem(`kf_bills_${uid}`)) || [];
                 window.goals = JSON.parse(localStorage.getItem(`kf_goals_${uid}`)) || [];
                 window.budgets = JSON.parse(localStorage.getItem(`kf_budgets_${uid}`)) || [];
-                const savedCatsRaw = localStorage.getItem(`kf_cats_${uid}`);
-                const savedCats = savedCatsRaw ? JSON.parse(savedCatsRaw) : null;
-                if (savedCats && Array.isArray(savedCats) && savedCats.length > 0) {
+                const savedCats = JSON.parse(localStorage.getItem(`kf_cats_${uid}`)); 
+                if(savedCats && Array.isArray(savedCats) && savedCats.length > 0) {
                     window.categories = savedCats;
                 } else {
                     window.categories = defaultCats;
@@ -492,7 +542,7 @@
             if(!incValEl || !expValEl) return;
             const tIn = window.transactions.filter(t => t.type === 'income').reduce((acc, curr) => acc + curr.amount, 0);
             const tOut = window.transactions.filter(t => t.type === 'expense').reduce((acc, curr) => acc + curr.amount, 0);
-            document.getElementById('chart-inc-val').innerText = formatRupiah(tIn); document.getElementById('chart-exp-val').innerText = formatRupiah(tOut);
+            incValEl.innerText = formatRupiah(tIn); expValEl.innerText = formatRupiah(tOut);
             const total = tIn + tOut; if(total > 0) { if(incFill) incFill.style.width = Math.round((tIn/total)*100)+'%'; if(expFill) expFill.style.width = Math.round((tOut/total)*100)+'%'; }
         }
         function renderBills() {
@@ -518,7 +568,6 @@
                 bl.innerHTML += `<div class="chart-container" style="background: var(--card-bg); border: 2px solid var(--border);"><div class="flex"><b style="font-size:0.85rem">${b.icon} ${b.name}</b> ${warningTag} <span style="font-weight:900; color:${color}">${percent}%</span></div><div class="glow-bar" style="height: 8px;"><div style="height:100%; width:${percent}%; background: ${color};"></div></div><div class="flex" style="margin-top:12px; font-size:0.75rem; font-weight:800;"><span>${formatRupiah(spent)}</span><span class="text-muted">Batas: ${formatRupiah(b.limit)}</span></div><div style="text-align:right; margin-top:10px;"><button onclick="openConfirmModal('Hapus limit?', ()=>{deleteBudgetAction('${b.id}')})" style="background:rgba(225, 29, 72, 0.1); border:none; color:var(--danger); font-weight:800; font-size:0.65rem; padding:5px 12px; border-radius:10px;">HAPUS</button></div></div>`;
             });
         }
-
         function updateUI() {
             if(!window.currentUser) return;
             let total = 0; const wc = document.getElementById('wallets-container'); const ws = document.getElementById('wallet-select'); const wts = document.getElementById('wallet-to-select');
@@ -565,7 +614,7 @@
         }
 
         /**
-         * 5. ACTIONS
+         * 6. ACTIONS
          */
         function changeHijriTemp(val) { 
             window.tempHijriAdj += val; 
@@ -632,7 +681,7 @@
         function closeConfirm(result) { toggleModal('modal-confirm'); if (result && window.confirmCallbackFn) window.confirmCallbackFn(); window.confirmCallbackFn = null; }
         function openPromptModal(title, defaultVal, callback) { document.getElementById('prompt-title').innerText = title; document.getElementById('prompt-input').value = defaultVal.toLocaleString('id-ID'); window.promptCallbackFn = callback; toggleModal('modal-prompt'); }
         function closePrompt(result) { const val = document.getElementById('prompt-input').value; toggleModal('modal-prompt'); if (result && window.promptCallbackFn) window.promptCallbackFn(val); window.promptCallbackFn = null; }
-        function closeExitModal(confirmExit) { toggleModal('modal-exit'); if (confirmExit) { handleLogout(); } }
+        function closeExitModal(confirmExit) { toggleModal('modal-exit'); if (confirmExit) { showNotice("Sesi ditutup."); } }
 
         function setTxMode(m) { 
             window.currentTxMode = m; 
@@ -646,7 +695,7 @@
         /**
          * 7. SYSTEM BOOTSTRAP
          */
-        function initHistorySystem() {
+        const initHistorySystem = () => {
             window.history.pushState({ view: 'root' }, "");
             window.onpopstate = function(e) {
                 // 1. Jika ada input fokus (keyboard muncul), tutup keyboard
@@ -675,7 +724,7 @@
                     window.history.pushState({ view: 'root' }, "");
                 }
             };
-        }
+        };
 
         function initApp() { 
             setInterval(() => { updateTimeAndDate(); }, 1000); 
@@ -691,7 +740,7 @@
             addNewBill, confirmPayment, deleteWalletAction, updateWalletAction, 
             deleteCategoryAction, deleteBillAction, deleteBudgetAction, updateGoalAction, 
             deleteGoalAction, openConfirmModal, openPromptModal, initPayment, clearHistory,
-            selectWalletIcon, adjustHijri: changeHijriTemp, changeHijriTemp, saveHijriSettings, initHistorySystem
+            selectWalletIcon, triggerScan, handleFileScan, changeHijriTemp, saveHijriSettings, initHistorySystem
         });
 
         window.onload = () => { 
