@@ -409,7 +409,10 @@
         function formatAmountInput(input) { if(!input) return; let v = input.value.replace(/\D/g, ""); input.value = v.replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
         function showNotice(msg) { const t = document.getElementById('toast'); if(t){ t.innerText = msg; t.style.opacity = 1; t.style.transform = "translateX(-50%) translateY(0)"; setTimeout(() => { t.style.opacity = 0; t.style.transform = "translateX(-50%) translateY(-20px)"; }, 2000); } }
         function toggleModal(id) { const m = document.getElementById(id); if(m) m.classList.toggle('active'); }
-        function applyTheme(isDark) { document.body.setAttribute('data-theme', isDark ? 'dark' : 'light'); try { localStorage.setItem('kf_theme', isDark ? 'dark' : 'light'); } catch(e){} }
+        function applyTheme(isDark) { 
+            document.body.setAttribute('data-theme', isDark ? 'dark' : 'light'); 
+            try { localStorage.setItem('kf_theme', isDark ? 'dark' : 'light'); } catch(e){} 
+        }
         function selectWalletIcon(icon) { window.selectedWalletIcon = icon; document.querySelectorAll('.wallet-icon-item').forEach(el => { el.classList.toggle('selected', el.getAttribute('data-icon') === icon); }); }
 
         async function triggerScan() { document.getElementById('scan-input').click(); }
@@ -421,7 +424,6 @@
                 try {
                     const { data: { text } } = await Tesseract.recognize(file, 'ind');
                     // Improved Regex for Indonesian currency formats
-                    // Matches: 100.000, 100000, 100.000,00
                     const cleanText = text.replace(/[^0-9.,]/g, ' ');
                     const matches = cleanText.match(/\b\d{1,3}(?:[.]\d{3})*(?:,\d+)?\b|\b\d+\b/g); 
                     
